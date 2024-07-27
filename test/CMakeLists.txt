@@ -1,0 +1,3 @@
+add_subdirectory(utf8_to_utf16)
+add_subdirectory(utf8_validity)
+add_subdirectory(utf16_to_utf8)
