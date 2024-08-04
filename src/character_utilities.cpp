@@ -405,7 +405,7 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
     // Iterate over the input span
     while (p < q)
     {
-        std::uint32_t character;
+        std::uint32_t character{};
 
         // Extract the character from the input span (uint32 is used since
         // since UTF-16 can encode characters in the range of 0..1ffff using)
@@ -426,7 +426,7 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
         if ((character >= Unicode::Surrogate_High_Min) &&
             (character <= Unicode::Surrogate_Low_Max))
         {
-            std::uint16_t low_surrogate;
+            std::uint16_t low_surrogate{};
 
             // Ensure the character value is not in the low surrogate range
             if ((character >= Unicode::Surrogate_Low_Min) &&
@@ -455,8 +455,8 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
             p += 2;
 
             // Ensure the low surrogate value is within the expected range
-            if (!((low_surrogate >= Unicode::Surrogate_Low_Min) &&
-                  (low_surrogate <= Unicode::Surrogate_Low_Max)))
+            if ((low_surrogate < Unicode::Surrogate_Low_Min) ||
+                (low_surrogate > Unicode::Surrogate_Low_Max))
             {
                 return {false, 0};
             }
@@ -609,10 +609,8 @@ bool IsUTF8Valid(std::span<const std::uint8_t> octets)
         return false;
     }
 
-    // If there are other octets expected, return an error
-    if (expected_utf8_remaining > 0) return false;
-
-    return true;
+    // If there are other octets expected, conversion was successful
+    return expected_utf8_remaining == 0;
 }
 
 } // namespace Terra::CharUtil
