@@ -312,6 +312,38 @@ STF_TEST(TestUTF8toUTF16, Russian)
     STF_ASSERT_EQ(expected, output);
 }
 
+STF_TEST(TestUTF8toUTF16, VariousSurrogates)
+{
+    const std::vector<std::uint8_t> expected =
+    {
+        0x01, 0xD8, 0x37, 0xDC, 0x52, 0xD8, 0x62, 0xDF
+    };
+    const std::u8string utf8_string = u8"𐐷𤭢";
+
+    std::vector<std::uint8_t> output(utf8_string.size() * 2);
+    auto [result, length] = ConvertUTF8ToUTF16(
+        std::span<const std::uint8_t>(
+            reinterpret_cast<const std::uint8_t *>(utf8_string.data()),
+            utf8_string.size()),
+        output,
+        true);
+
+    // Ensure the conversion was successful
+    STF_ASSERT_TRUE(result);
+
+    // Verify the length
+    STF_ASSERT_EQ(expected.size(), length);
+
+    // Verify the length <= vector size
+    STF_ASSERT_LE(length, output.size());
+
+    // Resize the vector to match the length
+    output.resize(length);
+
+    // Ensure the conversion is correct
+    STF_ASSERT_EQ(expected, output);
+}
+
 STF_TEST(TestUTF8toUTF16, Emoji_1)
 {
     const std::vector<std::uint8_t> expected =

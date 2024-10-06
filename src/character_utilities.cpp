@@ -34,17 +34,17 @@ constexpr std::uint32_t Maximum_BMP_Value = 0xffff;
 
 // Surrogates are within the following range
 // (See: https://en.wikipedia.org/wiki/UTF-16#U+D800_to_U+DFFF_(surrogates))
-constexpr std::uint32_t Surrogate_High_Min =  0xd800;
-[[maybe_unused]] constexpr std::uint32_t Surrogate_High_Max =  0xdbff;
-constexpr std::uint32_t Surrogate_Low_Min =  0xdc00;
-[[maybe_unused]] constexpr std::uint32_t Surrogate_Low_Max =  0xdfff;
+constexpr std::uint32_t Surrogate_High_Min = 0xd800;
+[[maybe_unused]] constexpr std::uint32_t Surrogate_High_Max = 0xdbff;
+constexpr std::uint32_t Surrogate_Low_Min = 0xdc00;
+constexpr std::uint32_t Surrogate_Low_Max = 0xdfff;
 
 // Values used in parsing or creating surrogate pairs
 // (See: https://www.Unicode.org/faq/utf_bom.html#utf16-3)
 constexpr std::uint32_t Lead_Offset = 0xd800 - (0x1'0000 >> 10);
-[[maybe_unused]] constexpr std::uint32_t Surrogate_Offset =
-                                        0x1'0000 - (0xd800 << 10) - 0xdc00;
-
+constexpr std::uint32_t Surrogate_Offset = 0xfca0'2400;
+// Surrogate_Offset = 0x1'0000 - (0xd800 << 10) - 0xdc00;
+// Pre-computed to avoid compiler warnings about
 } // namespace Unicode
 
 namespace
@@ -462,7 +462,10 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
             }
 
             // Convert the high / low code point values to a UTF-32 value
-            // (See: https://www.Unicode.org/faq/utf_bom.html#utf16-3)
+            // (See: https://www.Unicode.org/faq/utf_bom.html#utf16-3).
+            // NOTE: An alternative is this, but this takes more steps:
+            //           character = ((character - 0xd800) << 10) +
+            //                       (low_surrogate - 0xdc00) + 0x1'0000;
             character =
                 (character << 10) + low_surrogate + Unicode::Surrogate_Offset;
         }
