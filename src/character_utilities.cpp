@@ -407,7 +407,7 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
     {
         std::uint32_t character{};
 
-        // Extract the character from the input span (uint32 is used since
+        // Extract the character from the input span (uint32_t is used since
         // since UTF-16 can encode characters in the range of 0..1ffff using)
         // surrogate code point values
         if (little_endian)
