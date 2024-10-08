@@ -43,8 +43,10 @@ constexpr std::uint32_t Surrogate_Low_Max = 0xdfff;
 // (See: https://www.Unicode.org/faq/utf_bom.html#utf16-3)
 constexpr std::uint32_t Lead_Offset = 0xd800 - (0x1'0000 >> 10);
 constexpr std::uint32_t Surrogate_Offset = 0xfca0'2400;
-// Surrogate_Offset = 0x1'0000 - (0xd800 << 10) - 0xdc00;
-// Pre-computed to avoid compiler warnings about
+// Surrogate_Offset = 0x1'0000 - (0xd800 << 10) - 0xdc00
+// Pre-computed to avoid compiler warnings about what is intended to be a
+// computation mod 2^32
+
 } // namespace Unicode
 
 namespace
