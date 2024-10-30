@@ -16,7 +16,7 @@ if(charutil_BUILD_TESTS)
         GIT_SHALLOW    true)
 
     # It is not necessary to install the STF library
-    set (stf_INSTALL OFF)
+    set(stf_INSTALL OFF)
 
     # Make dependencies available
     FetchContent_MakeAvailable(stf)
