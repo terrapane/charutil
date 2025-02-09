@@ -18,7 +18,7 @@ set_target_properties(test_utf16_to_utf8
 target_compile_options(test_utf16_to_utf8
     PRIVATE
         $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>: -Wpedantic -Wextra -Wall>
-        $<$<CXX_COMPILER_ID:MSVC>: >)
+        $<$<CXX_COMPILER_ID:MSVC>: /utf-8>)
 
 # Ensure CTest can find the test
 add_test(NAME test_utf16_to_utf8
