@@ -1,8 +1,9 @@
 # Change Log
 
-v1.0.2 (in progress)
+v1.0.2
 
 - Changes MSVC compiler flags to properly interpret source files with UTF-8
+- Updated to use latest Simple Test Framework
 
 v1.0.1
 
