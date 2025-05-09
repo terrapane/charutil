@@ -1,5 +1,11 @@
 # Change Log
 
+v1.0.3
+
+- Enable additional warnings on Windows
+- Treat warnings as errors
+- Updated dependencies
+
 v1.0.2
 
 - Changes MSVC compiler flags to properly interpret source files with UTF-8
