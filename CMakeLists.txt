@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 
 # Define the Character Utilities project
 project(charutil
-        VERSION 1.0.3.0
+        VERSION 1.0.4.0
         DESCRIPTION "Character Utilities Library"
         LANGUAGES CXX)
 
@@ -21,10 +21,11 @@ option(charutil_INSTALL "Install the Character Utilities Library" ON)
 # Determine whether clang-tidy will be performed
 option(charutil_CLANG_TIDY "Use clang-tidy to perform linting during build" OFF)
 
+# Ensure testing is enabled to surface tests in dependencies
+include(CTest)
+
 add_subdirectory(dependencies)
 add_subdirectory(src)
-
-include(CTest)
 
 if(BUILD_TESTING AND charutil_BUILD_TESTS)
     add_subdirectory(test)

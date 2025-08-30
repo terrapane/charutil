@@ -1,5 +1,10 @@
 # Change Log
 
+v1.0.4
+
+- Minor CMake changes
+- Updated dependencies
+
 v1.0.3
 
 - Enable additional warnings on Windows
