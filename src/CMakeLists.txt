@@ -1,3 +1,6 @@
+# Include standard installation directory variables
+include(GNUInstallDirs)
+
 # Create the library
 add_library(charutil STATIC character_utilities.cpp)
 add_library(Terra::charutil ALIAS charutil)
@@ -7,7 +10,8 @@ target_include_directories(charutil
     PRIVATE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
     PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 # Specify the C++ standard to observe
 set_target_properties(charutil
@@ -34,7 +38,6 @@ target_compile_options(charutil
 
 # Install target and associated include files
 if(charutil_INSTALL)
-    include(GNUInstallDirs)
     install(TARGETS charutil EXPORT charutilTargets ARCHIVE)
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ TYPE INCLUDE)
     install(EXPORT charutilTargets
