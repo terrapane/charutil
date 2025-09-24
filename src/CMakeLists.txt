@@ -2,7 +2,11 @@
 include(GNUInstallDirs)
 
 # Create the library
-add_library(charutil STATIC character_utilities.cpp)
+add_library(charutil STATIC
+    utf8_to_utf16.cpp
+    utf16_to_utf8.cpp
+    is_valid_utf8.cpp
+)
 add_library(Terra::charutil ALIAS charutil)
 
 # Make project include directory available to external projects
