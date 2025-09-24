@@ -1,7 +1,7 @@
 /*
  *  character_utilities.cpp
  *
- *  Copyright (C) 2024
+ *  Copyright (C) 2024, 2025
  *  Terrapane Corporation
  *  All Rights Reserved
  *
@@ -16,38 +16,13 @@
  *      None.
  */
 
-#include <limits>
 #include <algorithm>
+#include <iterator>
 #include <terra/charutil/character_utilities.h>
+#include "unicode_constants.h"
 
 namespace Terra::CharUtil
 {
-
-namespace Unicode
-{
-
-// Largest valid Unicode character
-constexpr std::uint32_t Maximum_Character_Value = 0x10'ffff;
-
-// Maximum unicode character in the BMP
-constexpr std::uint32_t Maximum_BMP_Value = 0xffff;
-
-// Surrogates are within the following range
-// (See: https://en.wikipedia.org/wiki/UTF-16#U+D800_to_U+DFFF_(surrogates))
-constexpr std::uint32_t Surrogate_High_Min = 0xd800;
-[[maybe_unused]] constexpr std::uint32_t Surrogate_High_Max = 0xdbff;
-constexpr std::uint32_t Surrogate_Low_Min = 0xdc00;
-constexpr std::uint32_t Surrogate_Low_Max = 0xdfff;
-
-// Values used in parsing or creating surrogate pairs
-// (See: https://www.Unicode.org/faq/utf_bom.html#utf16-3)
-constexpr std::uint32_t Lead_Offset = 0xd800 - (0x1'0000 >> 10);
-constexpr std::uint32_t Surrogate_Offset = 0xfca0'2400;
-// Surrogate_Offset = 0x1'0000 - (0xd800 << 10) - 0xdc00
-// Pre-computed to avoid compiler warnings about what is intended to be a
-// computation mod 2^32
-
-} // namespace Unicode
 
 namespace
 {
@@ -164,7 +139,9 @@ constexpr std::uint16_t ExtractUTF16BE(std::span<const std::uint8_t, 2> buffer)
  *  Description:
  *      This function will take a span of octets in UTF-8 format and convert
  *      them to UTF-16 format.  This function will not insert byte-order-mark
- *      (BOM) octets.  The endianness is specified via the third parameter.
+ *      (BOM) octets, though if one exists in the input UTF-8 string it will
+ *      be retained.  The desired endianness for the UTF-16 output is specified
+ *      via the third parameter.
  *
  *  Parameters:
  *      in [in]
@@ -176,7 +153,8 @@ constexpr std::uint16_t ExtractUTF16BE(std::span<const std::uint8_t, 2> buffer)
  *          length might be smaller.
  *
  *      little_endian [in]
- *          Store the UTF-16 characters in little endian order?
+ *          Store the UTF-16 characters in little endian order?  This defaults
+ *          to true, as nearly every modern platform uses Little Endian.
  *
  *  Returns:
  *      A boolean and length pair, where the boolean indicates success or
@@ -200,10 +178,10 @@ std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
     if (in.empty()) return {true, 0};
 
     // If the output span is an insufficient size, return an error
-    if (out.size() < in.size() * 2) return {false, 0};
+    if (out.size() < (in.size() * 2)) return {false, 0};
 
-    // Assign the output pointer
-    std::uint8_t *p = out.data();
+    // Assign the output iterator
+    std::span<uint8_t>::iterator p = out.begin();
 
     // Iterate over the UTF-8 string
     for (std::uint8_t octet : in)
@@ -264,7 +242,7 @@ std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
                                       std::span<std::uint8_t, 2>{p + 2, 2});
                     }
 
-                    // Adjust the pointer p
+                    // Advance the iterator p
                     p += 4;
                 }
                 else
@@ -282,7 +260,7 @@ std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
                             std::span<std::uint8_t, 2>{p, 2});
                     }
 
-                    // Adjust the pointer p
+                    // Advance the iterator p
                     p += 2;
                 }
             }
@@ -336,7 +314,7 @@ std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
     // If there are other octets expected, return an error
     if (expected_utf8_remaining > 0) return {false, 0};
 
-    return {true, static_cast<std::size_t>(p - out.data())};
+    return {true, static_cast<std::size_t>(std::distance(out.begin(), p))};
 }
 
 /*
@@ -344,9 +322,12 @@ std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
  *
  *  Description:
  *      This function will take a span of octets in UTF-16 format and convert
- *      them to UTF-8 format.  The UTF-16 octets must NOT have a
- *      byte-order-mark (BOM) at the start.  The endianness is indicated
- *      via the third argument.
+ *      them to UTF-8 format.  The UTF-16 octets may have a byte-order-mark
+ *      (BOM) at the start, in which case the "little_endian" parameter will
+ *      be ignored and endianness derived from the BOM value.  The endianness
+ *      is indicated via the third argument if no BOM exists in the input data.
+ *      If a BOM is present in the input string, it will be preserved in the
+ *      output stream.  For UTF-8, the BOM is encoded as 0xEF BB BF.
  *
  *  Parameters:
  *      in [in]
@@ -367,7 +348,10 @@ std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
  *          they do not expand the length of the output string.
  *
  *      little_endian [in]
- *          Are the UTF-16 characters in little endian order?
+ *          Are the UTF-16 characters in little endian order? This defaults to
+ *          true, as nearly every modern platform uses Little Endian.  However,
+ *          if the input data has a BOM at the front, the BOM value will
+ *          takes precedence over this argument.
  *
  *  Returns:
  *      A boolean and length pair, where the boolean indicates success or
@@ -384,28 +368,40 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                                             std::span<std::uint8_t> out,
                                             bool little_endian)
 {
-    // Get the length of the UTF-16-encoded string
-    std::size_t pw_length = in.size();
-
     // If the input is zero length, so is the output
-    if (pw_length == 0) return {true, 0};
+    if (in.size() == 0) return {true, 0};
 
     // UTF-16 always has an even number of octets, so verify that is the case
-    if ((pw_length & 1) != 0) return {false, 0};
+    if ((in.size() & 1) != 0) return {false, 0};
 
     // Reject UTF-16 strings that are to long
-    if (pw_length > Max_UTF16_String) return {false, 0};
+    if (in.size() > Max_UTF16_String) return {false, 0};
 
     // If the output span is an insufficient size, return an error (1.5x size)
-    if (out.size() < (pw_length + (pw_length >> 1))) return {false, 0};
+    if (out.size() < (in.size() + (in.size() >> 1))) return {false, 0};
 
-    // Assign the input and output pointers
-    const std::uint8_t *p = in.data();
-    const std::uint8_t *q = in.data() + pw_length;
-    std::uint8_t *r = out.data();
+    // Assign the input and output iterators
+    std::span<const uint8_t>::iterator p = in.begin();
+    std::span<const uint8_t>::iterator q = in.end();
+    std::span<uint8_t>::iterator r = out.begin();
+
+    // Check to see if there is a BOM at the start of the string and, if so,
+    // change the endian flag as appropriate
+    if (std::distance(p, q) >= 4)
+    {
+        // Check if this is in Big Endian order, the little endian
+        if ((*(p + 0) == 0xFE) && (*(p + 1) == 0xFF))
+        {
+            little_endian = false;
+        }
+        else if ((*(p + 0) == 0xFF) && (*(p + 1) == 0xFE))
+        {
+            little_endian = true;
+        }
+    }
 
     // Iterate over the input span
-    while (p < q)
+    while (p != q)
     {
         std::uint32_t character{};
 
@@ -421,7 +417,7 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
             character = ExtractUTF16BE(std::span<const uint8_t, 2>(p, 2));
         }
 
-        // Advance the pointer to the next character (or surrogate)
+        // Advance the iterator to the next character (or surrogate)
         p += 2;
 
         // Is this character code in the surrogate range?
@@ -439,7 +435,7 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
 
             // Ensure we do not run off the end of the buffer as we read the
             // low surrogate value
-            if (p >= q) return {false, 0};
+            if (p == q) return {false, 0};
 
             // Extract the low surrogate code point
             if (little_endian)
@@ -453,7 +449,7 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                     ExtractUTF16BE(std::span<const uint8_t, 2>(p, 2));
             }
 
-            // Advance the pointer to the next character (for next iteration)
+            // Advance the iterator to the next character
             p += 2;
 
             // Ensure the low surrogate value is within the expected range
@@ -513,7 +509,7 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
         return {false, 0};
     }
 
-    return {true, static_cast<std::size_t>(r - out.data())};
+    return {true, static_cast<std::size_t>(std::distance(out.begin(), r))};
 }
 
 /*
@@ -550,6 +546,10 @@ bool IsUTF8Valid(std::span<const std::uint8_t> octets)
     // Iterate over the span of octets
     for (std::uint8_t octet : octets)
     {
+        // Invalid octet values
+        if ((octet == 0xc0) || (octet == 0xc1)) return false;
+        if (octet >= 0xF5) return false;
+
         // Handle subsequent UTF-8 octets
         if (expected_utf8_remaining > 0)
         {
@@ -614,7 +614,7 @@ bool IsUTF8Valid(std::span<const std::uint8_t> octets)
         return false;
     }
 
-    // If there are other octets expected, conversion was successful
+    // If there are no other octets expected, it is a valid UTF-8 string
     return expected_utf8_remaining == 0;
 }
 

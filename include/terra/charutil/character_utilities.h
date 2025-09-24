@@ -1,7 +1,7 @@
 /*
  *  character_utilities.h
  *
- *  Copyright (C) 2024
+ *  Copyright (C) 2024, 2025
  *  Terrapane Corporation
  *  All Rights Reserved
  *
@@ -18,15 +18,21 @@
 
 #pragma once
 
+#include <string>
 #include <span>
 #include <utility>
 #include <cstdint>
 #include <cstddef>
-#include <limits>
 #include <climits>
+#include <limits>
 
 namespace Terra::CharUtil
 {
+
+// Define the UTF-8/16 Byte Order Mark (BOM) value; this would be encoded in
+// files or data transmission as 0xFFEE for Big Endian and 0xFEFF and as
+// 0xFFFE for Little Endian and appears as the sequence 0xEF BB BF in UTF-8
+constexpr std::uint16_t UTF_BOM = 0xFEFF;
 
 // Define the maximum length of a UTF-16 string when converting to UTF-8
 // supported by the ConvertUTF16ToUTF8() function
@@ -54,7 +60,9 @@ constexpr std::size_t Max_UTF16_String =
  *  Description:
  *      This function will take a span of octets in UTF-8 format and convert
  *      them to UTF-16 format.  This function will not insert byte-order-mark
- *      (BOM) octets.  The endianness is specified via the third parameter.
+ *      (BOM) octets, though if one exists in the input UTF-8 string it will
+ *      be retained.  The desired endianness for the UTF-16 output is specified
+ *      via the third parameter.
  *
  *  Parameters:
  *      in [in]
@@ -66,7 +74,8 @@ constexpr std::size_t Max_UTF16_String =
  *          length might be smaller.
  *
  *      little_endian [in]
- *          Store the UTF-16 characters in little endian order?
+ *          Store the UTF-16 characters in little endian order?  This defaults
+ *          to true, as nearly every modern platform uses Little Endian.
  *
  *  Returns:
  *      A boolean and length pair, where the boolean indicates success or
@@ -79,18 +88,45 @@ constexpr std::size_t Max_UTF16_String =
  *      None.
  */
 std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
-    std::span<const std::uint8_t> in,
-    std::span<std::uint8_t> out,
-    bool little_endian);
+                                            std::span<const std::uint8_t> in,
+                                            std::span<std::uint8_t> out,
+                                            bool little_endian = true);
+
+// Same as the above, but accepting std::u8string as input
+inline std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
+                                            const std::u8string &in,
+                                            std::span<std::uint8_t> out,
+                                            bool little_endian = true)
+{
+    return ConvertUTF8ToUTF16(
+        {reinterpret_cast<const std::uint8_t *>(in.data()), in.length()},
+        out,
+        little_endian);
+}
+
+// Same as the above, but accepting std::string as input
+inline std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
+                                            const std::string &in,
+                                            std::span<std::uint8_t> out,
+                                            bool little_endian = true)
+{
+    return ConvertUTF8ToUTF16(
+        {reinterpret_cast<const std::uint8_t *>(in.data()), in.length()},
+        out,
+        little_endian);
+}
 
 /*
  *  ConvertUTF16ToUTF8()
  *
  *  Description:
  *      This function will take a span of octets in UTF-16 format and convert
- *      them to UTF-8 format.  The UTF-16 octets must NOT have a
- *      byte-order-mark (BOM) at the start.  The endianness is indicated
- *      via the third argument.
+ *      them to UTF-8 format.  The UTF-16 octets may have a byte-order-mark
+ *      (BOM) at the start, in which case the "little_endian" parameter will
+ *      be ignored and endianness derived from the BOM value.  The endianness
+ *      is indicated via the third argument if no BOM exists in the input data.
+ *      If a BOM is present in the input string, it will be preserved in the
+ *      output stream.  For UTF-8, the BOM is encoded as 0xEF BB BF.
  *
  *  Parameters:
  *      in [in]
@@ -111,7 +147,10 @@ std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
  *          they do not expand the length of the output string.
  *
  *      little_endian [in]
- *          Are the UTF-16 characters in little endian order?
+ *          Are the UTF-16 characters in little endian order? This defaults to
+ *          true, as nearly every modern platform uses Little Endian.  However,
+ *          if the input data has a BOM at the front, the BOM value will
+ *          takes precedence over this argument.
  *
  *  Returns:
  *      A boolean and length pair, where the boolean indicates success or
@@ -126,7 +165,31 @@ std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
 std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                                             std::span<const std::uint8_t> in,
                                             std::span<std::uint8_t> out,
-                                            bool little_endian);
+                                            bool little_endian = true);
+
+// Same as the above, but accepting std::u8string as input
+inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
+                                            const std::u8string &in,
+                                            std::span<std::uint8_t> out,
+                                            bool little_endian = true)
+{
+    return ConvertUTF16ToUTF8(
+        {reinterpret_cast<const std::uint8_t *>(in.data()), in.length()},
+        out,
+        little_endian);
+}
+
+// Same as the above, but accepting std::string as input
+inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
+                                            const std::string &in,
+                                            std::span<std::uint8_t> out,
+                                            bool little_endian = true)
+{
+    return ConvertUTF16ToUTF8(
+        {reinterpret_cast<const std::uint8_t *>(in.data()), in.length()},
+        out,
+        little_endian);
+}
 
 /*
  *  IsUTF8Valid()
@@ -152,5 +215,21 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
  *      make sense.
  */
 bool IsUTF8Valid(std::span<const std::uint8_t> octets);
+
+// Same as the above, but accepting a std::u8string as input
+inline bool IsUTF8Valid(const std::u8string &octets)
+{
+    return IsUTF8Valid(std::span<const std::uint8_t>{
+        reinterpret_cast<const std::uint8_t *>(octets.data()),
+        octets.length()});
+}
+
+// Same as the above, but accepting a std::string as input
+inline bool IsUTF8Valid(const std::string &octets)
+{
+    return IsUTF8Valid(std::span<const std::uint8_t>{
+        reinterpret_cast<const std::uint8_t *>(octets.data()),
+        octets.length()});
+}
 
 } // namespace Terra::CharUtil

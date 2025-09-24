@@ -430,3 +430,79 @@ STF_TEST(TestUTF16toUTF8, Emoji_2)
               std::back_inserter(expected_vec));
     STF_ASSERT_EQ(expected_vec, output);
 }
+
+STF_TEST(TestUTF16toUTF8, BOM1)
+{
+    const std::u8string expected = u8"\uFEFFHello";
+
+    const std::vector<std::uint8_t> utf16le_string =
+    {
+        0xFF, 0xFE, 0x48, 0x00, 0x65, 0x00, 0x6c, 0x00,
+        0x6c, 0x00, 0x6f, 0x00
+    };
+
+    std::vector<std::uint8_t> output(utf16le_string.size() * 1.5);
+    auto [result, length] = ConvertUTF16ToUTF8(
+        std::span<const std::uint8_t>(
+            reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
+            utf16le_string.size()),
+        output,
+        true);
+
+    // Ensure the conversion was successful
+    STF_ASSERT_TRUE(result);
+
+    // Verify the length
+    STF_ASSERT_EQ(expected.size(), length);
+
+    // Verify the length <= vector size
+    STF_ASSERT_LE(length, output.size());
+
+    // Resize the vector to match the length
+    output.resize(length);
+
+    // Ensure the conversion is correct (copying "expected" into a vector)
+    std::vector<std::uint8_t> expected_vec;
+    std::copy(expected.begin(),
+              expected.end(),
+              std::back_inserter(expected_vec));
+    STF_ASSERT_EQ(expected_vec, output);
+}
+
+STF_TEST(TestUTF16toUTF8, BOM2)
+{
+    const std::u8string expected = u8"\uFEFFHello";
+
+    const std::vector<std::uint8_t> utf16le_string =
+    {
+        0xFF, 0xFE, 0x48, 0x00, 0x65, 0x00, 0x6c, 0x00,
+        0x6c, 0x00, 0x6f, 0x00
+    };
+
+    std::vector<std::uint8_t> output(utf16le_string.size() * 1.5);
+    auto [result, length] = ConvertUTF16ToUTF8(
+        std::span<const std::uint8_t>(
+            reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
+            utf16le_string.size()),
+        output,
+        false); // This is the "wrong" flag, but BOM will be detected
+
+    // Ensure the conversion was successful
+    STF_ASSERT_TRUE(result);
+
+    // Verify the length
+    STF_ASSERT_EQ(expected.size(), length);
+
+    // Verify the length <= vector size
+    STF_ASSERT_LE(length, output.size());
+
+    // Resize the vector to match the length
+    output.resize(length);
+
+    // Ensure the conversion is correct (copying "expected" into a vector)
+    std::vector<std::uint8_t> expected_vec;
+    std::copy(expected.begin(),
+              expected.end(),
+              std::back_inserter(expected_vec));
+    STF_ASSERT_EQ(expected_vec, output);
+}
