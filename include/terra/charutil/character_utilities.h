@@ -92,26 +92,26 @@ std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
                                             std::span<std::uint8_t> out,
                                             bool little_endian = true);
 
-// Same as the above, but accepting std::u8string as input
+// Same as the above, but accepting a char8_t span as input
 inline std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
-                                            const std::u8string &in,
+                                            std::span<const char8_t> in,
                                             std::span<std::uint8_t> out,
                                             bool little_endian = true)
 {
     return ConvertUTF8ToUTF16(
-        {reinterpret_cast<const std::uint8_t *>(in.data()), in.length()},
+        {reinterpret_cast<const std::uint8_t *>(in.data()), in.size()},
         out,
         little_endian);
 }
 
-// Same as the above, but accepting std::string as input
+// Same as the above, but accepting a char span as input
 inline std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
-                                            const std::string &in,
+                                            std::span<const char> in,
                                             std::span<std::uint8_t> out,
                                             bool little_endian = true)
 {
     return ConvertUTF8ToUTF16(
-        {reinterpret_cast<const std::uint8_t *>(in.data()), in.length()},
+        {reinterpret_cast<const std::uint8_t *>(in.data()), in.size()},
         out,
         little_endian);
 }
@@ -167,26 +167,26 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                                             std::span<std::uint8_t> out,
                                             bool little_endian = true);
 
-// Same as the above, but accepting std::u8string as input
+// Same as the above, but accepting a char8_t span as input
 inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
-                                            const std::u8string &in,
+                                            std::span<const char8_t> in,
                                             std::span<std::uint8_t> out,
                                             bool little_endian = true)
 {
     return ConvertUTF16ToUTF8(
-        {reinterpret_cast<const std::uint8_t *>(in.data()), in.length()},
+        {reinterpret_cast<const std::uint8_t *>(in.data()), in.size()},
         out,
         little_endian);
 }
 
-// Same as the above, but accepting std::string as input
+// Same as the above, but accepting a char span as input
 inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
-                                            const std::string &in,
+                                            std::span<const char> in,
                                             std::span<std::uint8_t> out,
                                             bool little_endian = true)
 {
     return ConvertUTF16ToUTF8(
-        {reinterpret_cast<const std::uint8_t *>(in.data()), in.length()},
+        {reinterpret_cast<const std::uint8_t *>(in.data()), in.size()},
         out,
         little_endian);
 }
@@ -216,20 +216,20 @@ inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
  */
 bool IsUTF8Valid(std::span<const std::uint8_t> octets);
 
-// Same as the above, but accepting a std::u8string as input
-inline bool IsUTF8Valid(const std::u8string &octets)
+// Same as the above, but accepting a char8_t span as input
+inline bool IsUTF8Valid(std::span<const char8_t> octets)
 {
     return IsUTF8Valid(std::span<const std::uint8_t>{
         reinterpret_cast<const std::uint8_t *>(octets.data()),
-        octets.length()});
+        octets.size()});
 }
 
-// Same as the above, but accepting a std::string as input
-inline bool IsUTF8Valid(const std::string &octets)
+// Same as the above, but accepting a char span as input
+inline bool IsUTF8Valid(std::span<const char> octets)
 {
     return IsUTF8Valid(std::span<const std::uint8_t>{
         reinterpret_cast<const std::uint8_t *>(octets.data()),
-        octets.length()});
+        octets.size()});
 }
 
 } // namespace Terra::CharUtil
