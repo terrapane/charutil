@@ -25,9 +25,21 @@
 #include <cstddef>
 #include <climits>
 #include <limits>
+#include <concepts>
+#include <ranges>
 
 namespace Terra::CharUtil
 {
+
+// Define a concept to represent any 8-bit integral value
+template<typename T>
+concept EightBitIntegral = std::integral<T> && sizeof(T) == 1;
+
+// Define concept to facilitate using template functions with strings
+template<typename R>
+concept ContiguousEightBitRange =
+    std::ranges::contiguous_range<R> &&
+    EightBitIntegral<std::ranges::range_value_t<R>>;
 
 // Define the UTF-8/16 Byte Order Mark (BOM) value; this would be encoded in
 // files or data transmission as 0xFFEE for Big Endian and 0xFEFF and as
@@ -92,27 +104,20 @@ std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
                                             std::span<std::uint8_t> out,
                                             bool little_endian = true);
 
-// Same as the above, but accepting a char8_t span as input
+// Define a template type to accommodate other 8-bit sequence types
+template<ContiguousEightBitRange R1, ContiguousEightBitRange R2>
 inline std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
-                                            std::span<const char8_t> in,
-                                            std::span<std::uint8_t> out,
+                                            R1 &&range1,
+                                            R2 &&range2,
                                             bool little_endian = true)
 {
     return ConvertUTF8ToUTF16(
-        {reinterpret_cast<const std::uint8_t *>(in.data()), in.size()},
-        out,
-        little_endian);
-}
-
-// Same as the above, but accepting a char span as input
-inline std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
-                                            std::span<const char> in,
-                                            std::span<std::uint8_t> out,
-                                            bool little_endian = true)
-{
-    return ConvertUTF8ToUTF16(
-        {reinterpret_cast<const std::uint8_t *>(in.data()), in.size()},
-        out,
+        std::span<const std::uint8_t>(
+            reinterpret_cast<const std::uint8_t *>(std::ranges::data(range1)),
+            std::ranges::size(range1)),
+        std::span<std::uint8_t>(
+            reinterpret_cast<std::uint8_t *>(std::ranges::data(range2)),
+            std::ranges::size(range2)),
         little_endian);
 }
 
@@ -167,27 +172,19 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                                             std::span<std::uint8_t> out,
                                             bool little_endian = true);
 
-// Same as the above, but accepting a char8_t span as input
+template<ContiguousEightBitRange R1, ContiguousEightBitRange R2>
 inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
-                                            std::span<const char8_t> in,
-                                            std::span<std::uint8_t> out,
+                                            R1 &&range1,
+                                            R2 &&range2,
                                             bool little_endian = true)
 {
     return ConvertUTF16ToUTF8(
-        {reinterpret_cast<const std::uint8_t *>(in.data()), in.size()},
-        out,
-        little_endian);
-}
-
-// Same as the above, but accepting a char span as input
-inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
-                                            std::span<const char> in,
-                                            std::span<std::uint8_t> out,
-                                            bool little_endian = true)
-{
-    return ConvertUTF16ToUTF8(
-        {reinterpret_cast<const std::uint8_t *>(in.data()), in.size()},
-        out,
+        std::span<const std::uint8_t>(
+            reinterpret_cast<const std::uint8_t *>(std::ranges::data(range1)),
+            std::ranges::size(range1)),
+        std::span<std::uint8_t>(
+            reinterpret_cast<std::uint8_t *>(std::ranges::data(range2)),
+            std::ranges::size(range2)),
         little_endian);
 }
 
@@ -216,20 +213,13 @@ inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
  */
 bool IsUTF8Valid(std::span<const std::uint8_t> octets);
 
-// Same as the above, but accepting a char8_t span as input
-inline bool IsUTF8Valid(std::span<const char8_t> octets)
+// Same as the above, but accepting a any 8-bit value sequence
+template<ContiguousEightBitRange R>
+inline bool IsUTF8Valid(R &&range)
 {
-    return IsUTF8Valid(std::span<const std::uint8_t>{
-        reinterpret_cast<const std::uint8_t *>(octets.data()),
-        octets.size()});
-}
-
-// Same as the above, but accepting a char span as input
-inline bool IsUTF8Valid(std::span<const char> octets)
-{
-    return IsUTF8Valid(std::span<const std::uint8_t>{
-        reinterpret_cast<const std::uint8_t *>(octets.data()),
-        octets.size()});
+    return IsUTF8Valid(std::span<const std::uint8_t>(
+        reinterpret_cast<const std::uint8_t *>(std::ranges::data(range)),
+        std::ranges::size(range)));
 }
 
 } // namespace Terra::CharUtil
