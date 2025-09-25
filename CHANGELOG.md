@@ -2,6 +2,7 @@
 
 v1.0.5
 
+- Introduced templates to allow for more various 8-bit sequence types
 - Improved BOM handling
 - Moved functions into different compilation units
 - CMake changes

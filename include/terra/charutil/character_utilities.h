@@ -104,7 +104,7 @@ std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
                                             std::span<std::uint8_t> out,
                                             bool little_endian = true);
 
-// Define a template type to accommodate other 8-bit sequence types
+// Same as above, but allowing any range holding 8-bit values
 template<ContiguousEightBitRange R1, ContiguousEightBitRange R2>
 inline std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
                                             R1 &&range1,
@@ -172,6 +172,7 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                                             std::span<std::uint8_t> out,
                                             bool little_endian = true);
 
+// Same as above, but allowing any range holding 8-bit values
 template<ContiguousEightBitRange R1, ContiguousEightBitRange R2>
 inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                                             R1 &&range1,
@@ -213,7 +214,7 @@ inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
  */
 bool IsUTF8Valid(std::span<const std::uint8_t> octets);
 
-// Same as the above, but accepting a any 8-bit value sequence
+// Same as above, but allowing any range holding 8-bit values
 template<ContiguousEightBitRange R>
 inline bool IsUTF8Valid(R &&range)
 {
