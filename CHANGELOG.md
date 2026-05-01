@@ -1,5 +1,9 @@
 # Change Log
 
+v1.0.6
+
+- Changed size() call to empty()
+
 v1.0.5
 
 - Introduced templates to allow for more various 8-bit sequence types

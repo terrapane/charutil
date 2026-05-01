@@ -128,7 +128,7 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                                             bool little_endian)
 {
     // If the input is zero length, so is the output
-    if (in.size() == 0) return {true, 0};
+    if (in.empty()) return {true, 0};
 
     // UTF-16 always has an even number of octets, so verify that is the case
     if ((in.size() & 1) != 0) return {false, 0};
