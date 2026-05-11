@@ -15,8 +15,11 @@
  *      None.
  */
 
-#include <algorithm>
 #include <iterator>
+#include <cstdint>
+#include <cstddef>
+#include <utility>
+#include <span>
 #include <terra/charutil/character_utilities.h>
 #include "unicode_constants.h"
 

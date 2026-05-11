@@ -15,8 +15,11 @@
  *      None.
  */
 
-#include <algorithm>
+#include <cstdint>
+#include <cstddef>
 #include <iterator>
+#include <span>
+#include <utility>
 #include <terra/charutil/character_utilities.h>
 #include "unicode_constants.h"
 
@@ -141,7 +144,7 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
 
     // Assign the input and output iterators
     std::span<const uint8_t>::iterator p = in.begin();
-    std::span<const uint8_t>::iterator q = in.end();
+    const std::span<const uint8_t>::iterator q = in.end();
     std::span<uint8_t>::iterator r = out.begin();
 
     // Check to see if there is a BOM at the start of the string and, if so,

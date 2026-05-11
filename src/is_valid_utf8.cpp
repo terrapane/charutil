@@ -16,6 +16,9 @@
  *      None.
  */
 
+#include <span>
+#include <cstdint>
+#include <cstddef>
 #include <terra/charutil/character_utilities.h>
 #include "unicode_constants.h"
 

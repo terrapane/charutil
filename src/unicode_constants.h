@@ -43,4 +43,4 @@ constexpr std::uint32_t Surrogate_Offset = 0xfca0'2400;
 // Pre-computed to avoid compiler warnings about what is intended to be a
 // computation mod 2^32
 
-} // namespace Unicode
+} // namespace Terra::CharUtil::Unicode
