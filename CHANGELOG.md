@@ -3,6 +3,7 @@
 v1.0.6
 
 - Changed size() call to empty()
+- Updated dependencies
 
 v1.0.5
 
