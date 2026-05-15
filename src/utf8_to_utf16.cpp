@@ -1,7 +1,7 @@
 /*
  *  utf8_to_utf16.cpp
  *
- *  Copyright (C) 2024, 2025
+ *  Copyright (C) 2024, 2025, 2026
  *  Terrapane Corporation
  *  All Rights Reserved
  *
@@ -53,8 +53,8 @@ namespace
 constexpr void InsertUTF16LE(const std::uint16_t character,
                              std::span<std::uint8_t, 2> buffer)
 {
-    buffer[0] = static_cast<uint8_t>(character & 0xff);
-    buffer[1] = static_cast<uint8_t>((character >> 8) & 0xff);
+    buffer[0] = static_cast<uint8_t>(character);
+    buffer[1] = static_cast<uint8_t>(character >> 8U);
 }
 
 /*
@@ -81,8 +81,8 @@ constexpr void InsertUTF16LE(const std::uint16_t character,
 constexpr void InsertUTF16BE(const std::uint16_t character,
                              std::span<std::uint8_t, 2> buffer)
 {
-    buffer[0] = static_cast<uint8_t>((character >> 8) & 0xff);
-    buffer[1] = static_cast<uint8_t>(character & 0xff);
+    buffer[0] = static_cast<uint8_t>(character >> 8U);
+    buffer[1] = static_cast<uint8_t>(character);
 }
 
 } // namespace
@@ -144,10 +144,10 @@ std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
         if (expected_utf8_remaining > 0)
         {
             // Expecting a 10xxxxxx octet
-            if ((octet & 0xc0) != 0x80) return {false, 0};
+            if ((octet & 0xc0U) != 0x80) return {false, 0};
 
             // Append additional bits to the wide character
-            wide_character = (wide_character << 6) | (octet & 0x3f);
+            wide_character = (wide_character << 6U) | (octet & 0x3fU);
 
             // Decrement the number of expected octets remaining
             expected_utf8_remaining--;
@@ -176,10 +176,10 @@ std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
                     // (See: https://www.Unicode.org/faq/utf_bom.html#utf16-3)
                     std::uint16_t high_surrogate =
                         static_cast<std::uint16_t>(Unicode::Lead_Offset +
-                                                   (wide_character >> 10));
+                                                   (wide_character >> 10U));
                     std::uint16_t low_surrogate =
                         static_cast<std::uint16_t>(Unicode::Surrogate_Low_Min +
-                                                   (wide_character & 0x3ff));
+                                                   (wide_character & 0x3ffU));
 
                     if (little_endian)
                     {
@@ -238,25 +238,25 @@ std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
         }
 
         // Two octet UTF-8 sequence (110xxxxx)
-        if ((octet & 0xe0) == 0xc0)
+        if ((octet & 0xe0U) == 0xc0)
         {
-            wide_character = octet & 0x3f;
+            wide_character = octet & 0x3fU;
             expected_utf8_remaining = 1;
             continue;
         }
 
         // Three octet UTF-8 sequence (1110xxxx)
-        if ((octet & 0xf0) == 0xe0)
+        if ((octet & 0xf0U) == 0xe0)
         {
-            wide_character = octet & 0x0f;
+            wide_character = octet & 0x0fU;
             expected_utf8_remaining = 2;
             continue;
         }
 
         // Four octet UTF-8 sequence (11110xxx)
-        if ((octet & 0xf8) == 0xf0)
+        if ((octet & 0xf8U) == 0xf0)
         {
-            wide_character = octet & 0x07;
+            wide_character = octet & 0x07U;
             expected_utf8_remaining = 3;
             continue;
         }

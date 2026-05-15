@@ -1,7 +1,7 @@
 /*
  *  is_valid_utf8.cpp
  *
- *  Copyright (C) 2024, 2025
+ *  Copyright (C) 2024, 2025, 2026
  *  Terrapane Corporation
  *  All Rights Reserved
  *
@@ -67,10 +67,10 @@ bool IsUTF8Valid(std::span<const std::uint8_t> octets)
         if (expected_utf8_remaining > 0)
         {
             // Expecting a 10xxxxxx octet
-            if ((octet & 0xc0) != 0x80) return false;
+            if ((octet & 0xc0U) != 0x80) return false;
 
             // Append additional bits to the wide character
-            wide_character = (wide_character << 6) | (octet & 0x3f);
+            wide_character = (wide_character << 6U) | (octet & 0x3fU);
 
             // Decrement the number of expected octets remaining
             expected_utf8_remaining--;
@@ -100,25 +100,25 @@ bool IsUTF8Valid(std::span<const std::uint8_t> octets)
         if (octet <= 0x7f) continue;
 
         // Two octet UTF-8 sequence (110xxxxx)
-        if ((octet & 0xe0) == 0xc0)
+        if ((octet & 0xe0U) == 0xc0)
         {
-            wide_character = octet & 0x3f;
+            wide_character = octet & 0x3fU;
             expected_utf8_remaining = 1;
             continue;
         }
 
         // Three octet UTF-8 sequence (1110xxxx)
-        if ((octet & 0xf0) == 0xe0)
+        if ((octet & 0xf0U) == 0xe0)
         {
-            wide_character = octet & 0x0f;
+            wide_character = octet & 0x0fU;
             expected_utf8_remaining = 2;
             continue;
         }
 
         // Four octet UTF-8 sequence (11110xxx)
-        if ((octet & 0xf8) == 0xf0)
+        if ((octet & 0xf8U) == 0xf0)
         {
-            wide_character = octet & 0x07;
+            wide_character = octet & 0x07U;
             expected_utf8_remaining = 3;
             continue;
         }

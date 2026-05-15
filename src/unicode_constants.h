@@ -1,7 +1,7 @@
 /*
  *  unicode_constants.h
  *
- *  Copyright (C) 2024, 2025
+ *  Copyright (C) 2024, 2025, 2026
  *  Terrapane Corporation
  *  All Rights Reserved
  *
@@ -37,7 +37,7 @@ constexpr std::uint32_t Surrogate_Low_Max = 0xdfff;
 
 // Values used in parsing or creating surrogate pairs
 // (See: https://www.Unicode.org/faq/utf_bom.html#utf16-3)
-constexpr std::uint32_t Lead_Offset = 0xd800 - (0x1'0000 >> 10);
+constexpr std::uint32_t Lead_Offset = 0xd800 - (0x1'0000U >> 10U);
 constexpr std::uint32_t Surrogate_Offset = 0xfca0'2400;
 // Surrogate_Offset = 0x1'0000 - (0xd800 << 10) - 0xdc00
 // Pre-computed to avoid compiler warnings about what is intended to be a

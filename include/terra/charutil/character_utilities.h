@@ -1,7 +1,7 @@
 /*
  *  character_utilities.h
  *
- *  Copyright (C) 2024, 2025
+ *  Copyright (C) 2024, 2025, 2026
  *  Terrapane Corporation
  *  All Rights Reserved
  *
@@ -61,10 +61,10 @@ constexpr std::uint16_t UTF_BOM = 0xFEFF;
 // produce a complete value.
 constexpr std::size_t Max_UTF16_String =
     ((((std::numeric_limits<std::size_t>::max() >>
-        ((sizeof(std::size_t) * CHAR_BIT) >> 1)) << 1) / 3) <<
-        ((sizeof(std::size_t) * CHAR_BIT) >> 1)) |
+        ((sizeof(std::size_t) * CHAR_BIT) >> 1U)) << 1U) / 3) <<
+        ((sizeof(std::size_t) * CHAR_BIT) >> 1U)) |
     (((std::numeric_limits<std::size_t>::max() >>
-        ((sizeof(std::size_t) * CHAR_BIT) >> 1)) << 1) / 3);
+        ((sizeof(std::size_t) * CHAR_BIT) >> 1U)) << 1U) / 3);
 
 /*
  *  ConvertUTF8ToUTF16()

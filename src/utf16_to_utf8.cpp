@@ -1,7 +1,7 @@
 /*
  *  utf16_to_utf8.cpp
  *
- *  Copyright (C) 2024, 2025
+ *  Copyright (C) 2024, 2025, 2026
  *  Terrapane Corporation
  *  All Rights Reserved
  *
@@ -49,8 +49,11 @@ namespace
  */
 constexpr std::uint16_t ExtractUTF16LE(std::span<const std::uint8_t, 2> buffer)
 {
-    return (static_cast<std::uint16_t>(buffer[1]) << 8) |
-           (static_cast<std::uint16_t>(buffer[0])     );
+    const std::uint16_t high_bits =
+        static_cast<std::uint16_t>(static_cast<std::uint16_t>(buffer[1]) << 8U);
+    const std::uint16_t low_bits = buffer[0];
+
+    return high_bits | low_bits;
 }
 
 /*
@@ -73,8 +76,11 @@ constexpr std::uint16_t ExtractUTF16LE(std::span<const std::uint8_t, 2> buffer)
  */
 constexpr std::uint16_t ExtractUTF16BE(std::span<const std::uint8_t, 2> buffer)
 {
-    return (static_cast<std::uint16_t>(buffer[0]) << 8) |
-           (static_cast<std::uint16_t>(buffer[1])     );
+    const std::uint16_t high_bits =
+        static_cast<std::uint16_t>(static_cast<std::uint16_t>(buffer[0]) << 8U);
+    const std::uint16_t low_bits = buffer[1];
+
+    return high_bits | low_bits;
 }
 
 } // namespace
@@ -134,13 +140,13 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
     if (in.empty()) return {true, 0};
 
     // UTF-16 always has an even number of octets, so verify that is the case
-    if ((in.size() & 1) != 0) return {false, 0};
+    if ((in.size() & 1U) != 0) return {false, 0};
 
     // Reject UTF-16 strings that are to long
     if (in.size() > Max_UTF16_String) return {false, 0};
 
     // If the output span is an insufficient size, return an error (1.5x size)
-    if (out.size() < (in.size() + (in.size() >> 1))) return {false, 0};
+    if (out.size() < (in.size() + (in.size() >> 1U))) return {false, 0};
 
     // Assign the input and output iterators
     std::span<const uint8_t>::iterator p = in.begin();
@@ -172,11 +178,11 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
         // surrogate code point values
         if (little_endian)
         {
-            character = ExtractUTF16LE(std::span<const uint8_t, 2>(p, 2));
+            character = ExtractUTF16LE(std::span<const uint8_t, 2>{p, 2});
         }
         else
         {
-            character = ExtractUTF16BE(std::span<const uint8_t, 2>(p, 2));
+            character = ExtractUTF16BE(std::span<const uint8_t, 2>{p, 2});
         }
 
         // Advance the iterator to the next character (or surrogate)
@@ -203,12 +209,12 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
             if (little_endian)
             {
                 low_surrogate =
-                    ExtractUTF16LE(std::span<const uint8_t, 2>(p, 2));
+                    ExtractUTF16LE(std::span<const uint8_t, 2>{p, 2});
             }
             else
             {
                 low_surrogate =
-                    ExtractUTF16BE(std::span<const uint8_t, 2>(p, 2));
+                    ExtractUTF16BE(std::span<const uint8_t, 2>{p, 2});
             }
 
             // Advance the iterator to the next character
@@ -227,7 +233,7 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
             //           character = ((character - 0xd800) << 10) +
             //                       (low_surrogate - 0xdc00) + 0x1'0000;
             character =
-                (character << 10) + low_surrogate + Unicode::Surrogate_Offset;
+                (character << 10U) + low_surrogate + Unicode::Surrogate_Offset;
         }
 
         // The following will produce the UTF-8 code point(s)
@@ -236,34 +242,43 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
         if (character <= 0x7f)
         {
             // 0nnnnnn
-            *r++ = static_cast<std::uint8_t>(character & 0x7f);
+            *r++ = static_cast<std::uint8_t>(character & 0x7fU);
             continue;
         }
 
         if (character <= 0x7ff)
         {
             // 110nnnnn 10nnnnnn
-            *r++ = static_cast<std::uint8_t>(0xc0 | ((character >> 6) & 0x1f));
-            *r++ = static_cast<std::uint8_t>(0x80 | ((character     ) & 0x3f));
+            *r++ =
+                static_cast<std::uint8_t>(0xc0U | ((character >> 6U) & 0x1fU));
+            *r++ =
+                static_cast<std::uint8_t>(0x80U | ((character      ) & 0x3fU));
             continue;
         }
 
         if (character <= 0xffff)
         {
             // 1110nnnn 10nnnnnn 10nnnnnn
-            *r++ = static_cast<std::uint8_t>(0xe0 | ((character >> 12) & 0x0f));
-            *r++ = static_cast<std::uint8_t>(0x80 | ((character >>  6) & 0x3f));
-            *r++ = static_cast<std::uint8_t>(0x80 | ((character      ) & 0x3f));
+            *r++ =
+                static_cast<std::uint8_t>(0xe0U | ((character >> 12U) & 0x0fU));
+            *r++ =
+                static_cast<std::uint8_t>(0x80U | ((character >>  6U) & 0x3fU));
+            *r++ =
+                static_cast<std::uint8_t>(0x80U | ((character       ) & 0x3fU));
             continue;
         }
 
         if (character <= 0x10'ffff)
         {
             // 11110nnn 10nnnnnn 10nnnnnn 10nnnnnn
-            *r++ = static_cast<std::uint8_t>(0xf0 | ((character >> 18) & 0x07));
-            *r++ = static_cast<std::uint8_t>(0x80 | ((character >> 12) & 0x3f));
-            *r++ = static_cast<std::uint8_t>(0x80 | ((character >>  6) & 0x3f));
-            *r++ = static_cast<std::uint8_t>(0x80 | ((character      ) & 0x3f));
+            *r++ =
+                static_cast<std::uint8_t>(0xf0U | ((character >> 18U) & 0x07U));
+            *r++ =
+                static_cast<std::uint8_t>(0x80U | ((character >> 12U) & 0x3fU));
+            *r++ =
+                static_cast<std::uint8_t>(0x80U | ((character >>  6U) & 0x3fU));
+            *r++ =
+                static_cast<std::uint8_t>(0x80U | ((character       ) & 0x3fU));
             continue;
         }
 
