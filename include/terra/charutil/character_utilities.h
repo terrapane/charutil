@@ -116,11 +116,12 @@ inline std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
 {
     return ConvertUTF8ToUTF16(
         std::span<const std::uint8_t>(
-            reinterpret_cast<const std::uint8_t *>(std::ranges::data(in)),
+            reinterpret_cast<const std::uint8_t *>(
+                std::ranges::data(std::forward<R1>(in))),
             std::ranges::size(in)),
-        std::span<std::uint8_t>(
-            reinterpret_cast<std::uint8_t *>(std::ranges::data(out)),
-            std::ranges::size(out)),
+        std::span<std::uint8_t>(reinterpret_cast<std::uint8_t *>(
+                                    std::ranges::data(std::forward<R2>(out))),
+                                std::ranges::size(out)),
         little_endian);
 }
 
@@ -187,11 +188,12 @@ inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
 {
     return ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
-            reinterpret_cast<const std::uint8_t *>(std::ranges::data(in)),
+            reinterpret_cast<const std::uint8_t *>(
+                std::ranges::data(std::forward<R1>(in))),
             std::ranges::size(in)),
-        std::span<std::uint8_t>(
-            reinterpret_cast<std::uint8_t *>(std::ranges::data(out)),
-            std::ranges::size(out)),
+        std::span<std::uint8_t>(reinterpret_cast<std::uint8_t *>(
+                                    std::ranges::data(std::forward<R2>(out))),
+                                std::ranges::size(out)),
         little_endian);
 }
 
