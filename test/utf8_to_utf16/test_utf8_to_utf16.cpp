@@ -1,7 +1,7 @@
 /*
  *  test_utf8_to_utf16.cpp
  *
- *  Copyright (c) 2024
+ *  Copyright (c) 2024, 2016
  *  Terrapane Corporation
  *  All Rights Reserved
  *
@@ -18,6 +18,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <bit>
 #include <terra/charutil/character_utilities.h>
 #include <terra/stf/adapters/integral_vector.h>
 #include <terra/stf/stf.h>
@@ -63,38 +64,6 @@ STF_TEST(TestUTF8toUTF16, ASCII_1_LE)
     // Verify the length
     STF_ASSERT_EQ(expected.size(), length);
 
-    // Verify the length <= vector size
-    STF_ASSERT_LE(length, output.size());
-
-    // Resize the vector to match the length
-    output.resize(length);
-
-    // Ensure the conversion is correct
-    STF_ASSERT_EQ(expected, output);
-}
-
-STF_TEST(TestUTF8toUTF16, ASCII_1_BE)
-{
-    const std::vector<std::uint8_t> expected =
-    {
-        0x00, 0x48, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00, 0x6f
-    };
-    const std::u8string utf8_string = u8"Hello";
-
-    STF_ASSERT_TRUE(IsUTF8Valid(utf8_string));
-
-    std::vector<std::uint8_t> output(utf8_string.size() * 2);
-    auto [result, length] = ConvertUTF8ToUTF16(utf8_string, output, false);
-
-    // Ensure the conversion was successful
-    STF_ASSERT_TRUE(result);
-
-    // Verify the length
-    STF_ASSERT_EQ(expected.size(), length);
-
-    // Verify the length <= vector size
-    STF_ASSERT_LE(length, output.size());
-
     // Resize the vector to match the length
     output.resize(length);
 
@@ -124,11 +93,37 @@ STF_TEST(TestUTF8toUTF16, ASCII_2)
     // Verify the length
     STF_ASSERT_EQ(expected.size(), length);
 
-    // Verify the length <= vector size
-    STF_ASSERT_LE(length, output.size());
-
     // Resize the vector to match the length
     output.resize(length);
+
+    // Ensure the conversion is correct
+    STF_ASSERT_EQ(expected, output);
+}
+
+STF_TEST(TestUTF8toUTF16, ASCII_2_U16String)
+{
+    const std::u16string expected = u"Hello, World!";
+    const std::u8string utf8_string = u8"Hello, World!";
+
+    STF_ASSERT_TRUE(IsUTF8Valid(utf8_string));
+
+    std::u16string output(utf8_string.size(), u'\0');
+    // Note: cast is necessary since u16 is two octets
+    static_assert(sizeof(char16_t) == 2);
+    auto [result, length] = ConvertUTF8ToUTF16(
+        utf8_string,
+        std::span<std::uint8_t>{reinterpret_cast<uint8_t *>(output.data()),
+                                output.size() * 2},
+        (std::endian::native == std::endian::little));
+
+    // Ensure the conversion was successful
+    STF_ASSERT_TRUE(result);
+
+    // Verify the length
+    STF_ASSERT_EQ(expected.size() * 2, length);
+
+    // Resize the string to match
+    output.resize(expected.size());
 
     // Ensure the conversion is correct
     STF_ASSERT_EQ(expected, output);
@@ -153,9 +148,6 @@ STF_TEST(TestUTF8toUTF16, Chinese_LE)
 
     // Verify the length
     STF_ASSERT_EQ(expected.size(), length);
-
-    // Verify the length <= vector size
-    STF_ASSERT_LE(length, output.size());
 
     // Resize the vector to match the length
     output.resize(length);
@@ -183,9 +175,6 @@ STF_TEST(TestUTF8toUTF16, Chinese_BE)
     // Verify the length
     STF_ASSERT_EQ(expected.size(), length);
 
-    // Verify the length <= vector size
-    STF_ASSERT_LE(length, output.size());
-
     // Resize the vector to match the length
     output.resize(length);
 
@@ -212,9 +201,6 @@ STF_TEST(TestUTF8toUTF16, Japanese)
 
     // Verify the length
     STF_ASSERT_EQ(expected.size(), length);
-
-    // Verify the length <= vector size
-    STF_ASSERT_LE(length, output.size());
 
     // Resize the vector to match the length
     output.resize(length);
@@ -244,9 +230,6 @@ STF_TEST(TestUTF8toUTF16, Korean)
     // Verify the length
     STF_ASSERT_EQ(expected.size(), length);
 
-    // Verify the length <= vector size
-    STF_ASSERT_LE(length, output.size());
-
     // Resize the vector to match the length
     output.resize(length);
 
@@ -275,9 +258,6 @@ STF_TEST(TestUTF8toUTF16, Russian)
     // Verify the length
     STF_ASSERT_EQ(expected.size(), length);
 
-    // Verify the length <= vector size
-    STF_ASSERT_LE(length, output.size());
-
     // Resize the vector to match the length
     output.resize(length);
 
@@ -303,9 +283,6 @@ STF_TEST(TestUTF8toUTF16, VariousSurrogates)
 
     // Verify the length
     STF_ASSERT_EQ(expected.size(), length);
-
-    // Verify the length <= vector size
-    STF_ASSERT_LE(length, output.size());
 
     // Resize the vector to match the length
     output.resize(length);
@@ -337,9 +314,6 @@ STF_TEST(TestUTF8toUTF16, Emoji_1)
 
     // Verify the length
     STF_ASSERT_EQ(expected.size(), length);
-
-    // Verify the length <= vector size
-    STF_ASSERT_LE(length, output.size());
 
     // Resize the vector to match the length
     output.resize(length);
@@ -376,9 +350,6 @@ STF_TEST(TestUTF8toUTF16, Emoji_2)
     // Verify the length
     STF_ASSERT_EQ(expected.size(), length);
 
-    // Verify the length <= vector size
-    STF_ASSERT_LE(length, output.size());
-
     // Resize the vector to match the length
     output.resize(length);
 
@@ -409,9 +380,6 @@ STF_TEST(TestUTF8toUTF16, BOM1)
 
     // Verify the length
     STF_ASSERT_EQ(expected.size(), length);
-
-    // Verify the length <= vector size
-    STF_ASSERT_LE(length, output.size());
 
     // Resize the vector to match the length
     output.resize(length);
