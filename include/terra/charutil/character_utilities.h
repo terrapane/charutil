@@ -35,15 +35,25 @@ namespace Terra::CharUtil
 template<typename T>
 concept EightBitIntegral = std::integral<T> && sizeof(T) == 1;
 
-// Define concept to facilitate using template functions with strings
+// Define a concept to represent a 16-bit integral value
+template<typename T>
+concept SixteenBitIntegral = std::integral<T> && sizeof(T) == 2;
+
+// Define concepts to facilitate using template functions with strings
 template<typename R>
 concept ContiguousEightBitRange =
     std::ranges::contiguous_range<R> &&
-    EightBitIntegral<std::ranges::range_value_t<R>>;
+    (EightBitIntegral<std::ranges::range_value_t<R>> ||
+     std::is_same_v<std::remove_cv_t<std::ranges::range_value_t<R>>,
+                    std::byte>);
+template<typename R>
+concept ContiguousSixteenBitRange =
+    std::ranges::contiguous_range<R> &&
+    SixteenBitIntegral<std::ranges::range_value_t<R>>;
 
 // Define the UTF-8/16 Byte Order Mark (BOM) value; this would be encoded in
-// files or data transmission as 0xFFEE for Big Endian and 0xFEFF and as
-// 0xFFFE for Little Endian and appears as the sequence 0xEF BB BF in UTF-8
+// files or data transmission as 0xFEFF for Big Endian, as 0xFFFE for
+// Little Endian, and as the sequence 0xEF BB BF in UTF-8
 constexpr std::uint16_t UTF_BOM = 0xFEFF;
 
 // Define the maximum length of a UTF-16 string when converting to UTF-8
@@ -114,14 +124,36 @@ inline std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
                                             R2 &&out,
                                             bool little_endian = true)
 {
+    auto view_in = std::views::all(std::forward<R1>(in));
+    auto view_out = std::views::all(std::forward<R2>(out));
+
     return ConvertUTF8ToUTF16(
         std::span<const std::uint8_t>(
-            reinterpret_cast<const std::uint8_t *>(
-                std::ranges::data(std::forward<R1>(in))),
-            std::ranges::size(in)),
-        std::span<std::uint8_t>(reinterpret_cast<std::uint8_t *>(
-                                    std::ranges::data(std::forward<R2>(out))),
-                                std::ranges::size(out)),
+            reinterpret_cast<const std::uint8_t *>(std::ranges::data(view_in)),
+            std::ranges::size(view_in)),
+        std::span<std::uint8_t>(
+            reinterpret_cast<std::uint8_t *>(std::ranges::data(view_out)),
+            std::ranges::size(view_out)),
+        little_endian);
+}
+
+// Same as above, but allowing a string literal (char * or char8_t *)
+template<EightBitIntegral T, ContiguousEightBitRange R>
+inline std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
+                                            const T *in,
+                                            R &&out,
+                                            bool little_endian = true)
+{
+    std::basic_string_view<T> view_in(in);
+    auto view_out = std::views::all(std::forward<R>(out));
+
+    return ConvertUTF8ToUTF16(
+        std::span<const std::uint8_t>(
+            reinterpret_cast<const std::uint8_t *>(std::ranges::data(view_in)),
+            std::ranges::size(view_in)),
+        std::span<std::uint8_t>(
+            reinterpret_cast<std::uint8_t *>(std::ranges::data(view_out)),
+            std::ranges::size(view_out)),
         little_endian);
 }
 
@@ -186,14 +218,59 @@ inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                                             R2 &&out,
                                             bool little_endian = true)
 {
+    auto view_in = std::views::all(std::forward<R1>(in));
+    auto view_out = std::views::all(std::forward<R2>(out));
+
     return ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
-            reinterpret_cast<const std::uint8_t *>(
-                std::ranges::data(std::forward<R1>(in))),
-            std::ranges::size(in)),
-        std::span<std::uint8_t>(reinterpret_cast<std::uint8_t *>(
-                                    std::ranges::data(std::forward<R2>(out))),
-                                std::ranges::size(out)),
+            reinterpret_cast<const std::uint8_t *>(std::ranges::data(view_in)),
+            std::ranges::size(view_in)),
+        std::span<std::uint8_t>(
+            reinterpret_cast<std::uint8_t *>(std::ranges::data(view_out)),
+            std::ranges::size(view_out)),
+        little_endian);
+}
+
+// Same as above, but accepting a std::u16string as the input
+template<ContiguousSixteenBitRange R1, ContiguousEightBitRange R2>
+    requires(!std::is_same_v<std::remove_cvref_t<R1>,
+                             std::span<const std::uint8_t>> ||
+             !std::is_same_v<std::remove_cvref_t<R2>, std::span<std::uint8_t>>)
+inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
+                                            R1 &&in,
+                                            R2 &&out,
+                                            bool little_endian = true)
+{
+    auto view_in = std::views::all(std::forward<R1>(in));
+    auto view_out = std::views::all(std::forward<R2>(out));
+
+    return ConvertUTF16ToUTF8(
+        std::span<const std::uint8_t>(
+            reinterpret_cast<const std::uint8_t *>(std::ranges::data(view_in)),
+            std::ranges::size(view_in) * 2),
+        std::span<std::uint8_t>(
+            reinterpret_cast<std::uint8_t *>(std::ranges::data(view_out)),
+            std::ranges::size(view_out)),
+        little_endian);
+}
+
+// Same as above, but allowing a string literal (u"hello")
+template<SixteenBitIntegral T, ContiguousEightBitRange R>
+inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
+                                            const T *in,
+                                            R &&out,
+                                            bool little_endian = true)
+{
+    std::basic_string_view<T> view_in(in);
+    auto view_out = std::views::all(std::forward<R>(out));
+
+    return ConvertUTF16ToUTF8(
+        std::span<const std::uint8_t>(
+            reinterpret_cast<const std::uint8_t *>(std::ranges::data(view_in)),
+            std::ranges::size(view_in) * sizeof(T)),
+        std::span<std::uint8_t>(
+            reinterpret_cast<std::uint8_t *>(std::ranges::data(view_out)),
+            std::ranges::size(view_out)),
         little_endian);
 }
 
@@ -224,11 +301,13 @@ bool IsUTF8Valid(std::span<const std::uint8_t> octets);
 
 // Same as above, but allowing any range holding 8-bit values
 template<ContiguousEightBitRange R>
-inline bool IsUTF8Valid(R &range)
+inline bool IsUTF8Valid(R &&octets)
 {
+    auto view = std::views::all(std::forward<R>(octets));
+
     return IsUTF8Valid(std::span<const std::uint8_t>(
-        reinterpret_cast<const std::uint8_t *>(std::ranges::data(range)),
-        std::ranges::size(range)));
+        reinterpret_cast<const std::uint8_t *>(std::ranges::data(view)),
+        std::ranges::size(view)));
 }
 
 } // namespace Terra::CharUtil

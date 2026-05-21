@@ -18,6 +18,8 @@
 
 #include <cstdint>
 #include <vector>
+#include <string>
+#include <bit>
 #include <algorithm>
 #include <terra/charutil/character_utilities.h>
 #include <terra/stf/adapters/integral_vector.h>
@@ -162,6 +164,62 @@ STF_TEST(TestUTF16toUTF8, ASCII_2)
             utf16le_string.size()),
         output,
         true);
+
+    // Ensure the conversion was successful
+    STF_ASSERT_TRUE(result);
+
+    // Verify the length
+    STF_ASSERT_EQ(expected.size(), length);
+
+    // Resize the vector to match the length
+    output.resize(length);
+
+    // Ensure the conversion is correct (copying "expected" into a vector)
+    std::vector<std::uint8_t> expected_vec;
+    std::copy(expected.begin(),
+              expected.end(),
+              std::back_inserter(expected_vec));
+    STF_ASSERT_EQ(expected_vec, output);
+}
+
+STF_TEST(TestUTF16toUTF8, ASCII_3)
+{
+    const std::u8string expected = u8"Hello, World!";
+    const std::u16string utf16_string = u"Hello, World!";
+
+    std::vector<std::uint8_t> output(utf16_string.size() * 2 * 1.5);
+    auto [result, length] =
+        ConvertUTF16ToUTF8(u"Hello, World!",
+                           output,
+                           (std::endian::native == std::endian::little));
+
+    // Ensure the conversion was successful
+    STF_ASSERT_TRUE(result);
+
+    // Verify the length
+    STF_ASSERT_EQ(expected.size(), length);
+
+    // Resize the vector to match the length
+    output.resize(length);
+
+    // Ensure the conversion is correct (copying "expected" into a vector)
+    std::vector<std::uint8_t> expected_vec;
+    std::copy(expected.begin(),
+              expected.end(),
+              std::back_inserter(expected_vec));
+    STF_ASSERT_EQ(expected_vec, output);
+}
+
+STF_TEST(TestUTF16toUTF8, ASCII_4)
+{
+    const std::u8string expected = u8"Hello, World!";
+    const std::u16string utf16_string = u"Hello, World!";
+
+    std::vector<std::uint8_t> output(utf16_string.size() * 2 * 1.5);
+    auto [result, length] =
+        ConvertUTF16ToUTF8(std::u16string(u"Hello, World!"),
+                           output,
+                           (std::endian::native == std::endian::little));
 
     // Ensure the conversion was successful
     STF_ASSERT_TRUE(result);

@@ -18,6 +18,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <string>
 #include <bit>
 #include <terra/charutil/character_utilities.h>
 #include <terra/stf/adapters/integral_vector.h>
@@ -86,6 +87,60 @@ STF_TEST(TestUTF8toUTF16, ASCII_2)
 
     std::vector<std::uint8_t> output(utf8_string.size() * 2);
     auto [result, length] = ConvertUTF8ToUTF16(utf8_string, output, true);
+
+    // Ensure the conversion was successful
+    STF_ASSERT_TRUE(result);
+
+    // Verify the length
+    STF_ASSERT_EQ(expected.size(), length);
+
+    // Resize the vector to match the length
+    output.resize(length);
+
+    // Ensure the conversion is correct
+    STF_ASSERT_EQ(expected, output);
+}
+
+STF_TEST(TestUTF8toUTF16, ASCII_3)
+{
+    const std::vector<std::uint8_t> expected =
+    {
+        0x48, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00,
+        0x6f, 0x00, 0x2c, 0x00, 0x20, 0x00, 0x57, 0x00,
+        0x6f, 0x00, 0x72, 0x00, 0x6c, 0x00, 0x64, 0x00,
+        0x21, 0x00
+    };
+
+    std::vector<std::uint8_t> output(std::u8string(u8"Hello, World!").size() *
+                                     2);
+    auto [result, length] = ConvertUTF8ToUTF16(std::u8string(u8"Hello, World!"), output, true);
+
+    // Ensure the conversion was successful
+    STF_ASSERT_TRUE(result);
+
+    // Verify the length
+    STF_ASSERT_EQ(expected.size(), length);
+
+    // Resize the vector to match the length
+    output.resize(length);
+
+    // Ensure the conversion is correct
+    STF_ASSERT_EQ(expected, output);
+}
+
+STF_TEST(TestUTF8toUTF16, ASCII_4)
+{
+    const std::vector<std::uint8_t> expected =
+    {
+        0x48, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00,
+        0x6f, 0x00, 0x2c, 0x00, 0x20, 0x00, 0x57, 0x00,
+        0x6f, 0x00, 0x72, 0x00, 0x6c, 0x00, 0x64, 0x00,
+        0x21, 0x00
+    };
+
+    std::vector<std::uint8_t> output(std::u8string(u8"Hello, World!").size() *
+                                     20);
+    auto [result, length] = ConvertUTF8ToUTF16(u8"Hello, World!", output, true);
 
     // Ensure the conversion was successful
     STF_ASSERT_TRUE(result);

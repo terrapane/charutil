@@ -18,6 +18,9 @@
 
 #include <cstdint>
 #include <vector>
+#include <array>
+#include <string>
+#include <cstddef>
 #include <terra/charutil/character_utilities.h>
 #include <terra/stf/adapters/integral_vector.h>
 #include <terra/stf/stf.h>
@@ -118,6 +121,52 @@ STF_TEST(TestUTF8Validity, Valid2)
     STF_ASSERT_TRUE(IsUTF8Valid(valid_sequence));
 }
 
+STF_TEST(TestUTF8Validity, Valid3)
+{
+    STF_ASSERT_TRUE(IsUTF8Valid("Hello, World!"));
+}
+
+STF_TEST(TestUTF8Validity, Valid4)
+{
+    STF_ASSERT_TRUE(IsUTF8Valid(std::string("Hello, World!")));
+}
+
+STF_TEST(TestUTF8Validity, Valid5)
+{
+    STF_ASSERT_TRUE(IsUTF8Valid(u8"你好世界！"));
+}
+
+STF_TEST(TestUTF8Validity, Valid6)
+{
+    STF_ASSERT_TRUE(IsUTF8Valid(std::u8string(u8"你好世界！")));
+}
+
+STF_TEST(TestUTF8Validity, Valid7)
+{
+    std::array<char, 5> text = {'H', 'e', 'l', 'l', 'o'};
+
+    STF_ASSERT_TRUE(IsUTF8Valid(text));
+}
+
+STF_TEST(TestUTF8Validity, Valid8)
+{
+    std::array<std::byte, 5> text = {std::byte{'H'},
+                                     std::byte{'e'},
+                                     std::byte{'l'},
+                                     std::byte{'l'},
+                                     std::byte{'o'}};
+
+    STF_ASSERT_TRUE(IsUTF8Valid(text));
+}
+
+STF_TEST(TestUTF8Validity, Valid9)
+{
+    std::uint8_t text[] = {'H', 'e', 'l', 'l', 'o'};
+
+    STF_ASSERT_TRUE(IsUTF8Valid(text));
+}
+
+
 STF_TEST(TestUTF8Validity, Invalid1)
 {
     const std::vector<std::uint8_t> invalid_sequence =
@@ -147,6 +196,26 @@ STF_TEST(TestUTF8Validity, Invalid3)
         // Person in boat (first octet wrong on purpose)
         0xf8, 0x9f, 0x9a, 0xa3
     };
+
+    STF_ASSERT_FALSE(IsUTF8Valid(invalid_sequence));
+}
+
+STF_TEST(TestUTF8Validity, Invalid4)
+{
+    // Invalid in UTF-8 due to last octet
+    std::byte invalid_sequence[] = {std::byte{'T'},
+                                    std::byte{'e'},
+                                    std::byte{'s'},
+                                    std::byte{'t'},
+                                    std::byte{0xFF}};
+
+    STF_ASSERT_FALSE(IsUTF8Valid(invalid_sequence));
+}
+
+STF_TEST(TestUTF8Validity, Invalid5)
+{
+    // Invalid in UTF-8 due to last octet
+    std::uint8_t invalid_sequence[] = {'T', 'e', 's', 't', 0xFF};
 
     STF_ASSERT_FALSE(IsUTF8Valid(invalid_sequence));
 }
