@@ -107,7 +107,20 @@ constexpr std::size_t Max_UTF16_String =
  *      UTF-16 output span.
  *
  *  Comments:
- *      None.
+ *      Code below used to read like this:
+ *
+ *          auto view_in = std::views::all(std::forward<R1>(in));
+ *
+ *      But was changed to this:
+ *
+ *          auto view_in =
+ *              std::ranges::subrange(std::begin(std::forward<R1>(in)),
+ *                                    std::end(std::forward<R1>(in)));
+ *
+ *      The reason was that support was required on legacy systems like
+ *      CentOS 7. Functionally, these are the same but just more verbose.
+ *      In the future (once CentOS 7 and other legacy systems are no longer
+ *      supported), this code may be revised to reintroduce std::views.
  */
 std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
                                             std::span<const std::uint8_t> in,
@@ -124,8 +137,10 @@ inline std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
                                             R2 &&out,
                                             bool little_endian = true)
 {
-    auto view_in = std::views::all(std::forward<R1>(in));
-    auto view_out = std::views::all(std::forward<R2>(out));
+    auto view_in = std::ranges::subrange(std::begin(std::forward<R1>(in)),
+                                         std::end(std::forward<R1>(in)));
+    auto view_out = std::ranges::subrange(std::begin(std::forward<R2>(out)),
+                                          std::end(std::forward<R2>(out)));
 
     return ConvertUTF8ToUTF16(
         std::span<const std::uint8_t>(
@@ -145,7 +160,8 @@ inline std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
                                             bool little_endian = true)
 {
     std::basic_string_view<T> view_in(in);
-    auto view_out = std::views::all(std::forward<R>(out));
+    auto view_out = std::ranges::subrange(std::begin(std::forward<R>(out)),
+                                          std::end(std::forward<R>(out)));
 
     return ConvertUTF8ToUTF16(
         std::span<const std::uint8_t>(
@@ -218,8 +234,10 @@ inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                                             R2 &&out,
                                             bool little_endian = true)
 {
-    auto view_in = std::views::all(std::forward<R1>(in));
-    auto view_out = std::views::all(std::forward<R2>(out));
+    auto view_in = std::ranges::subrange(std::begin(std::forward<R1>(in)),
+                                         std::end(std::forward<R1>(in)));
+    auto view_out = std::ranges::subrange(std::begin(std::forward<R2>(out)),
+                                          std::end(std::forward<R2>(out)));
 
     return ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
@@ -241,8 +259,10 @@ inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                                             R2 &&out,
                                             bool little_endian = true)
 {
-    auto view_in = std::views::all(std::forward<R1>(in));
-    auto view_out = std::views::all(std::forward<R2>(out));
+    auto view_in = std::ranges::subrange(std::begin(std::forward<R1>(in)),
+                                         std::end(std::forward<R1>(in)));
+    auto view_out = std::ranges::subrange(std::begin(std::forward<R2>(out)),
+                                          std::end(std::forward<R2>(out)));
 
     return ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
@@ -262,7 +282,8 @@ inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                                             bool little_endian = true)
 {
     std::basic_string_view<T> view_in(in);
-    auto view_out = std::views::all(std::forward<R>(out));
+    auto view_out = std::ranges::subrange(std::begin(std::forward<R>(out)),
+                                          std::end(std::forward<R>(out)));
 
     return ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
@@ -303,7 +324,8 @@ bool IsUTF8Valid(std::span<const std::uint8_t> octets);
 template<ContiguousEightBitRange R>
 inline bool IsUTF8Valid(R &&octets)
 {
-    auto view = std::views::all(std::forward<R>(octets));
+    auto view = std::ranges::subrange(std::begin(std::forward<R>(octets)),
+                                      std::end(std::forward<R>(octets)));
 
     return IsUTF8Valid(std::span<const std::uint8_t>(
         reinterpret_cast<const std::uint8_t *>(std::ranges::data(view)),
