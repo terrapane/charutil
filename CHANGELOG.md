@@ -1,5 +1,9 @@
 # Change Log
 
+v1.0.7
+
+- Stricter compiler warnings
+
 v1.0.6
 
 - Changed size() call to empty()

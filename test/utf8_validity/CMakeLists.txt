@@ -17,7 +17,7 @@ set_target_properties(test_utf8_validity
 # Specify the compiler options
 target_compile_options(test_utf8_validity
     PRIVATE
-        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wpedantic -Wextra -Wall>
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wpedantic -Wextra -Wall -Wconversion -Wshadow>
         $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
 
 # Ensure CTest can find the test

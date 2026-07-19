@@ -58,7 +58,8 @@ STF_TEST(TestUTF16toUTF8, ASCII_1_LE)
         0x6f, 0x00
     };
 
-    std::vector<std::uint8_t> output(utf16le_string.size() * 1.5);
+    std::vector<std::uint8_t> output(utf16le_string.size() +
+                                     (utf16le_string.size() >> 1));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -92,7 +93,8 @@ STF_TEST(TestUTF16toUTF8, ASCII_1_LE_StringOut)
         0x6f, 0x00
     };
 
-    std::u8string output(utf16le_string.size() * 1.5, '\0');
+    std::u8string output(utf16le_string.size() + (utf16le_string.size() >> 1),
+                         '\0');
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -121,7 +123,8 @@ STF_TEST(TestUTF16toUTF8, ASCII_1_BE)
          0x00, 0x48, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00, 0x6f
     };
 
-    std::vector<std::uint8_t> output(utf16be_string.size() * 1.5);
+    std::vector<std::uint8_t> output(utf16be_string.size() +
+                                     (utf16be_string.size() >> 1));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16be_string.data()),
@@ -157,7 +160,8 @@ STF_TEST(TestUTF16toUTF8, ASCII_2)
         0x21, 0x00
     };
 
-    std::vector<std::uint8_t> output(utf16le_string.size() * 1.5);
+    std::vector<std::uint8_t> output(utf16le_string.size() +
+                                     (utf16le_string.size() >> 1));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -187,7 +191,9 @@ STF_TEST(TestUTF16toUTF8, ASCII_3)
     const std::u8string expected = u8"Hello, World!";
     const std::u16string utf16_string = u"Hello, World!";
 
-    std::vector<std::uint8_t> output(utf16_string.size() * 2 * 1.5);
+    const std::size_t octets = utf16_string.size() * 2;
+
+    std::vector<std::uint8_t> output(octets + (octets >> 1));
     auto [result, length] =
         ConvertUTF16ToUTF8(u"Hello, World!",
                            output,
@@ -215,7 +221,9 @@ STF_TEST(TestUTF16toUTF8, ASCII_4)
     const std::u8string expected = u8"Hello, World!";
     const std::u16string utf16_string = u"Hello, World!";
 
-    std::vector<std::uint8_t> output(utf16_string.size() * 2 * 1.5);
+    const std::size_t octets = utf16_string.size() * 2;
+
+    std::vector<std::uint8_t> output(octets + (octets >> 1));
     auto [result, length] =
         ConvertUTF16ToUTF8(std::u16string(u"Hello, World!"),
                            output,
@@ -247,7 +255,8 @@ STF_TEST(TestUTF16toUTF8, Chinese_LE)
         0x01, 0xff
     };
 
-    std::vector<std::uint8_t> output(utf16le_string.size() * 1.5);
+    std::vector<std::uint8_t> output(utf16le_string.size() +
+                                     (utf16le_string.size() >> 1));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -280,7 +289,8 @@ STF_TEST(TestUTF16toUTF8, Chinese_BE)
         0x4f, 0x60, 0x59, 0x7d, 0x4e, 0x16, 0x75, 0x4c, 0xff, 0x01
     };
 
-    std::vector<std::uint8_t> output(utf16be_string.size() * 1.5);
+    std::vector<std::uint8_t> output(utf16be_string.size() +
+                                     (utf16be_string.size() >> 1));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16be_string.data()),
@@ -314,7 +324,8 @@ STF_TEST(TestUTF16toUTF8, Japanese)
         0x6f, 0x30, 0x16, 0x4e, 0x4c, 0x75, 0x01, 0xff
     };
 
-    std::vector<std::uint8_t> output(utf16le_string.size() * 1.5);
+    std::vector<std::uint8_t> output(utf16le_string.size() +
+                                     (utf16le_string.size() >> 1));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -349,7 +360,8 @@ STF_TEST(TestUTF16toUTF8, Korean)
         0xdc, 0xb4, 0x21, 0x00
     };
 
-    std::vector<std::uint8_t> output(utf16le_string.size() * 1.5);
+    std::vector<std::uint8_t> output(utf16le_string.size() +
+                                     (utf16le_string.size() >> 1));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -384,7 +396,8 @@ STF_TEST(TestUTF16toUTF8, Russian)
         0x3c, 0x04, 0x38, 0x04, 0x40, 0x04, 0x21, 0x00
     };
 
-    std::vector<std::uint8_t> output(utf16le_string.size() * 1.5);
+    std::vector<std::uint8_t> output(utf16le_string.size() +
+                                     (utf16le_string.size() >> 1));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -422,7 +435,8 @@ STF_TEST(TestUTF16toUTF8, Emoji_1)
         0x0d, 0xdf
     };
 
-    std::vector<std::uint8_t> output(utf16le_string.size() * 1.5);
+    std::vector<std::uint8_t> output(utf16le_string.size() +
+                                     (utf16le_string.size() >> 1));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -464,7 +478,8 @@ STF_TEST(TestUTF16toUTF8, Emoji_2)
         0x3c, 0xd8, 0x97, 0xdd
     };
 
-    std::vector<std::uint8_t> output(utf16le_string.size() * 1.5);
+    std::vector<std::uint8_t> output(utf16le_string.size() +
+                                     (utf16le_string.size() >> 1));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -499,7 +514,8 @@ STF_TEST(TestUTF16toUTF8, BOM1)
         0x6c, 0x00, 0x6f, 0x00
     };
 
-    std::vector<std::uint8_t> output(utf16le_string.size() * 1.5);
+    std::vector<std::uint8_t> output(utf16le_string.size() +
+                                     (utf16le_string.size() >> 1));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -534,7 +550,8 @@ STF_TEST(TestUTF16toUTF8, BOM2)
         0x6c, 0x00, 0x6f, 0x00
     };
 
-    std::vector<std::uint8_t> output(utf16le_string.size() * 1.5);
+    std::vector<std::uint8_t> output(utf16le_string.size() +
+                                     (utf16le_string.size() >> 1));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
