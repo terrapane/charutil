@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 
 # Define the Character Utilities project
 project(charutil
-        VERSION 1.0.7.0
+        VERSION 1.0.8.0
         DESCRIPTION "Character Utilities Library"
         LANGUAGES CXX)
 
