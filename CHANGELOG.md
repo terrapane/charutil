@@ -2,6 +2,9 @@
 
 v1.0.8
 
+- Fixed error in ConvertUTF16ToUTF8() and ConvertUTF8ToUTF16() when passing
+  arguments other than a span
+- Addressed clang-tidy recommendations in test code
 - Updated dependencies
 
 v1.0.7

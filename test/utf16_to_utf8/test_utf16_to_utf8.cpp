@@ -16,11 +16,14 @@
  *      None.
  */
 
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 #include <string>
 #include <bit>
 #include <algorithm>
+#include <span>
+#include <iterator>
 #include <terra/charutil/character_utilities.h>
 #include <terra/stf/adapters/integral_vector.h>
 #include <terra/stf/stf.h>
@@ -59,7 +62,7 @@ STF_TEST(TestUTF16toUTF8, ASCII_1_LE)
     };
 
     std::vector<std::uint8_t> output(utf16le_string.size() +
-                                     (utf16le_string.size() >> 1));
+                                     (utf16le_string.size() / 2));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -78,9 +81,8 @@ STF_TEST(TestUTF16toUTF8, ASCII_1_LE)
 
     // Ensure the conversion is correct (copying "expected" into a vector)
     std::vector<std::uint8_t> expected_vec;
-    std::copy(expected.begin(),
-              expected.end(),
-              std::back_inserter(expected_vec));
+    std::ranges::copy(expected, std::back_inserter(expected_vec));
+
     STF_ASSERT_EQ(expected_vec, output);
 }
 
@@ -93,7 +95,7 @@ STF_TEST(TestUTF16toUTF8, ASCII_1_LE_StringOut)
         0x6f, 0x00
     };
 
-    std::u8string output(utf16le_string.size() + (utf16le_string.size() >> 1),
+    std::u8string output(utf16le_string.size() + (utf16le_string.size() / 2),
                          '\0');
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
@@ -124,7 +126,7 @@ STF_TEST(TestUTF16toUTF8, ASCII_1_BE)
     };
 
     std::vector<std::uint8_t> output(utf16be_string.size() +
-                                     (utf16be_string.size() >> 1));
+                                     (utf16be_string.size() / 2));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16be_string.data()),
@@ -143,9 +145,8 @@ STF_TEST(TestUTF16toUTF8, ASCII_1_BE)
 
     // Ensure the conversion is correct (copying "expected" into a vector)
     std::vector<std::uint8_t> expected_vec;
-    std::copy(expected.begin(),
-              expected.end(),
-              std::back_inserter(expected_vec));
+    std::ranges::copy(expected, std::back_inserter(expected_vec));
+
     STF_ASSERT_EQ(expected_vec, output);
 }
 
@@ -161,7 +162,7 @@ STF_TEST(TestUTF16toUTF8, ASCII_2)
     };
 
     std::vector<std::uint8_t> output(utf16le_string.size() +
-                                     (utf16le_string.size() >> 1));
+                                     (utf16le_string.size() / 2));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -180,9 +181,8 @@ STF_TEST(TestUTF16toUTF8, ASCII_2)
 
     // Ensure the conversion is correct (copying "expected" into a vector)
     std::vector<std::uint8_t> expected_vec;
-    std::copy(expected.begin(),
-              expected.end(),
-              std::back_inserter(expected_vec));
+    std::ranges::copy(expected, std::back_inserter(expected_vec));
+
     STF_ASSERT_EQ(expected_vec, output);
 }
 
@@ -193,7 +193,7 @@ STF_TEST(TestUTF16toUTF8, ASCII_3)
 
     const std::size_t octets = utf16_string.size() * 2;
 
-    std::vector<std::uint8_t> output(octets + (octets >> 1));
+    std::vector<std::uint8_t> output(octets + (octets / 2));
     auto [result, length] =
         ConvertUTF16ToUTF8(u"Hello, World!",
                            output,
@@ -210,9 +210,8 @@ STF_TEST(TestUTF16toUTF8, ASCII_3)
 
     // Ensure the conversion is correct (copying "expected" into a vector)
     std::vector<std::uint8_t> expected_vec;
-    std::copy(expected.begin(),
-              expected.end(),
-              std::back_inserter(expected_vec));
+    std::ranges::copy(expected, std::back_inserter(expected_vec));
+
     STF_ASSERT_EQ(expected_vec, output);
 }
 
@@ -223,7 +222,7 @@ STF_TEST(TestUTF16toUTF8, ASCII_4)
 
     const std::size_t octets = utf16_string.size() * 2;
 
-    std::vector<std::uint8_t> output(octets + (octets >> 1));
+    std::vector<std::uint8_t> output(octets + (octets / 2));
     auto [result, length] =
         ConvertUTF16ToUTF8(std::u16string(u"Hello, World!"),
                            output,
@@ -240,9 +239,8 @@ STF_TEST(TestUTF16toUTF8, ASCII_4)
 
     // Ensure the conversion is correct (copying "expected" into a vector)
     std::vector<std::uint8_t> expected_vec;
-    std::copy(expected.begin(),
-              expected.end(),
-              std::back_inserter(expected_vec));
+    std::ranges::copy(expected, std::back_inserter(expected_vec));
+
     STF_ASSERT_EQ(expected_vec, output);
 }
 
@@ -256,7 +254,7 @@ STF_TEST(TestUTF16toUTF8, Chinese_LE)
     };
 
     std::vector<std::uint8_t> output(utf16le_string.size() +
-                                     (utf16le_string.size() >> 1));
+                                     (utf16le_string.size() / 2));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -275,9 +273,8 @@ STF_TEST(TestUTF16toUTF8, Chinese_LE)
 
     // Ensure the conversion is correct (copying "expected" into a vector)
     std::vector<std::uint8_t> expected_vec;
-    std::copy(expected.begin(),
-              expected.end(),
-              std::back_inserter(expected_vec));
+    std::ranges::copy(expected, std::back_inserter(expected_vec));
+
     STF_ASSERT_EQ(expected_vec, output);
 }
 
@@ -290,7 +287,7 @@ STF_TEST(TestUTF16toUTF8, Chinese_BE)
     };
 
     std::vector<std::uint8_t> output(utf16be_string.size() +
-                                     (utf16be_string.size() >> 1));
+                                     (utf16be_string.size() / 2));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16be_string.data()),
@@ -309,9 +306,8 @@ STF_TEST(TestUTF16toUTF8, Chinese_BE)
 
     // Ensure the conversion is correct (copying "expected" into a vector)
     std::vector<std::uint8_t> expected_vec;
-    std::copy(expected.begin(),
-              expected.end(),
-              std::back_inserter(expected_vec));
+    std::ranges::copy(expected, std::back_inserter(expected_vec));
+
     STF_ASSERT_EQ(expected_vec, output);
 }
 
@@ -325,7 +321,7 @@ STF_TEST(TestUTF16toUTF8, Japanese)
     };
 
     std::vector<std::uint8_t> output(utf16le_string.size() +
-                                     (utf16le_string.size() >> 1));
+                                     (utf16le_string.size() / 2));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -344,9 +340,8 @@ STF_TEST(TestUTF16toUTF8, Japanese)
 
     // Ensure the conversion is correct (copying "expected" into a vector)
     std::vector<std::uint8_t> expected_vec;
-    std::copy(expected.begin(),
-              expected.end(),
-              std::back_inserter(expected_vec));
+    std::ranges::copy(expected, std::back_inserter(expected_vec));
+
     STF_ASSERT_EQ(expected_vec, output);
 }
 
@@ -361,7 +356,7 @@ STF_TEST(TestUTF16toUTF8, Korean)
     };
 
     std::vector<std::uint8_t> output(utf16le_string.size() +
-                                     (utf16le_string.size() >> 1));
+                                     (utf16le_string.size() / 2));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -380,9 +375,8 @@ STF_TEST(TestUTF16toUTF8, Korean)
 
     // Ensure the conversion is correct (copying "expected" into a vector)
     std::vector<std::uint8_t> expected_vec;
-    std::copy(expected.begin(),
-              expected.end(),
-              std::back_inserter(expected_vec));
+    std::ranges::copy(expected, std::back_inserter(expected_vec));
+
     STF_ASSERT_EQ(expected_vec, output);
 }
 
@@ -397,7 +391,7 @@ STF_TEST(TestUTF16toUTF8, Russian)
     };
 
     std::vector<std::uint8_t> output(utf16le_string.size() +
-                                     (utf16le_string.size() >> 1));
+                                     (utf16le_string.size() / 2));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -416,9 +410,8 @@ STF_TEST(TestUTF16toUTF8, Russian)
 
     // Ensure the conversion is correct (copying "expected" into a vector)
     std::vector<std::uint8_t> expected_vec;
-    std::copy(expected.begin(),
-              expected.end(),
-              std::back_inserter(expected_vec));
+    std::ranges::copy(expected, std::back_inserter(expected_vec));
+
     STF_ASSERT_EQ(expected_vec, output);
 }
 
@@ -436,7 +429,7 @@ STF_TEST(TestUTF16toUTF8, Emoji_1)
     };
 
     std::vector<std::uint8_t> output(utf16le_string.size() +
-                                     (utf16le_string.size() >> 1));
+                                     (utf16le_string.size() / 2));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -455,9 +448,8 @@ STF_TEST(TestUTF16toUTF8, Emoji_1)
 
     // Ensure the conversion is correct (copying "expected" into a vector)
     std::vector<std::uint8_t> expected_vec;
-    std::copy(expected.begin(),
-              expected.end(),
-              std::back_inserter(expected_vec));
+    std::ranges::copy(expected, std::back_inserter(expected_vec));
+
     STF_ASSERT_EQ(expected_vec, output);
 }
 
@@ -479,7 +471,7 @@ STF_TEST(TestUTF16toUTF8, Emoji_2)
     };
 
     std::vector<std::uint8_t> output(utf16le_string.size() +
-                                     (utf16le_string.size() >> 1));
+                                     (utf16le_string.size() / 2));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -498,9 +490,8 @@ STF_TEST(TestUTF16toUTF8, Emoji_2)
 
     // Ensure the conversion is correct (copying "expected" into a vector)
     std::vector<std::uint8_t> expected_vec;
-    std::copy(expected.begin(),
-              expected.end(),
-              std::back_inserter(expected_vec));
+    std::ranges::copy(expected, std::back_inserter(expected_vec));
+
     STF_ASSERT_EQ(expected_vec, output);
 }
 
@@ -515,7 +506,7 @@ STF_TEST(TestUTF16toUTF8, BOM1)
     };
 
     std::vector<std::uint8_t> output(utf16le_string.size() +
-                                     (utf16le_string.size() >> 1));
+                                     (utf16le_string.size() / 2));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -534,9 +525,8 @@ STF_TEST(TestUTF16toUTF8, BOM1)
 
     // Ensure the conversion is correct (copying "expected" into a vector)
     std::vector<std::uint8_t> expected_vec;
-    std::copy(expected.begin(),
-              expected.end(),
-              std::back_inserter(expected_vec));
+    std::ranges::copy(expected, std::back_inserter(expected_vec));
+
     STF_ASSERT_EQ(expected_vec, output);
 }
 
@@ -551,7 +541,7 @@ STF_TEST(TestUTF16toUTF8, BOM2)
     };
 
     std::vector<std::uint8_t> output(utf16le_string.size() +
-                                     (utf16le_string.size() >> 1));
+                                     (utf16le_string.size() / 2));
     auto [result, length] = ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(utf16le_string.data()),
@@ -570,8 +560,7 @@ STF_TEST(TestUTF16toUTF8, BOM2)
 
     // Ensure the conversion is correct (copying "expected" into a vector)
     std::vector<std::uint8_t> expected_vec;
-    std::copy(expected.begin(),
-              expected.end(),
-              std::back_inserter(expected_vec));
+    std::ranges::copy(expected, std::back_inserter(expected_vec));
+
     STF_ASSERT_EQ(expected_vec, output);
 }

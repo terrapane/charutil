@@ -20,6 +20,7 @@
 #include <vector>
 #include <string>
 #include <bit>
+#include <span>
 #include <terra/charutil/character_utilities.h>
 #include <terra/stf/adapters/integral_vector.h>
 #include <terra/stf/stf.h>
@@ -31,7 +32,7 @@ static_assert(sizeof(char) == sizeof(std::uint8_t));
 
 STF_TEST(TestUTF8toUTF16, Empty)
 {
-    const std::u8string utf8_string = u8"";
+    const std::u8string utf8_string;
 
     STF_ASSERT_TRUE(IsUTF8Valid(utf8_string));
 
