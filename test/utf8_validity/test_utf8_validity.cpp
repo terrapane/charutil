@@ -1,7 +1,7 @@
 /*
  *  test_utf8_length.cpp
  *
- *  Copyright (c) 2024
+ *  Copyright (C) 2024, 2026
  *  Terrapane Corporation
  *  All Rights Reserved
  *
@@ -21,9 +21,13 @@
 #include <array>
 #include <string>
 #include <cstddef>
+#include <span>
 #include <terra/charutil/character_utilities.h>
-#include <terra/stf/adapters/integral_vector.h>
+#include <terra/stf/adapters/integral_vector.h> // NOLINT(misc-include-cleaner)
 #include <terra/stf/stf.h>
+
+namespace
+{
 
 using namespace Terra::CharUtil;
 
@@ -161,7 +165,8 @@ STF_TEST(TestUTF8Validity, Valid8)
 
 STF_TEST(TestUTF8Validity, Valid9)
 {
-    std::uint8_t text[] = {'H', 'e', 'l', 'l', 'o'};
+    // NOLINTNEXTLINE(*-avoid-c-arrays)
+    const std::uint8_t text[] = {'H', 'e', 'l', 'l', 'o'};
 
     STF_ASSERT_TRUE(IsUTF8Valid(text));
 }
@@ -203,11 +208,12 @@ STF_TEST(TestUTF8Validity, Invalid3)
 STF_TEST(TestUTF8Validity, Invalid4)
 {
     // Invalid in UTF-8 due to last octet
-    std::byte invalid_sequence[] = {std::byte{'T'},
-                                    std::byte{'e'},
-                                    std::byte{'s'},
-                                    std::byte{'t'},
-                                    std::byte{0xFF}};
+    // NOLINTNEXTLINE(*-avoid-c-arrays)
+    const std::byte invalid_sequence[] = {std::byte{'T'},
+                                          std::byte{'e'},
+                                          std::byte{'s'},
+                                          std::byte{'t'},
+                                          std::byte{0xFF}};
 
     STF_ASSERT_FALSE(IsUTF8Valid(invalid_sequence));
 }
@@ -215,7 +221,10 @@ STF_TEST(TestUTF8Validity, Invalid4)
 STF_TEST(TestUTF8Validity, Invalid5)
 {
     // Invalid in UTF-8 due to last octet
-    std::uint8_t invalid_sequence[] = {'T', 'e', 's', 't', 0xFF};
+    // NOLINTNEXTLINE(*-avoid-c-arrays)
+    const std::uint8_t invalid_sequence[] = {'T', 'e', 's', 't', 0xFF};
 
     STF_ASSERT_FALSE(IsUTF8Valid(invalid_sequence));
 }
+
+} // namespace

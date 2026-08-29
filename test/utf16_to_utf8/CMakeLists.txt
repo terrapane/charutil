@@ -14,6 +14,16 @@ set_target_properties(test_utf16_to_utf8
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS OFF)
 
+# If requesting clang-tidy, try to look for it
+if(charutil_CLANG_TIDY)
+    find_program(CLANG_TIDY_COMMAND NAMES "clang-tidy")
+    if(CLANG_TIDY_COMMAND)
+        set_target_properties(test_utf16_to_utf8 PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
+    else()
+        message(WARNING "Could not find clang-tidy")
+    endif()
+endif()
+
 # Specify the compiler options
 target_compile_options(test_utf16_to_utf8
     PRIVATE

@@ -6,6 +6,7 @@ v1.0.8
   arguments other than a span
 - Addressed clang-tidy recommendations in test code
 - Updated dependencies
+- Made unit tests support clang-tidy
 
 v1.0.7
 

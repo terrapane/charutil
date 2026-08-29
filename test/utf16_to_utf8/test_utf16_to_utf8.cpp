@@ -1,7 +1,7 @@
 /*
  *  test_utf16_to_utf8.cpp
  *
- *  Copyright (c) 2024
+ *  Copyright (C) 2024, 2026
  *  Terrapane Corporation
  *  All Rights Reserved
  *
@@ -25,8 +25,11 @@
 #include <span>
 #include <iterator>
 #include <terra/charutil/character_utilities.h>
-#include <terra/stf/adapters/integral_vector.h>
+#include <terra/stf/adapters/integral_vector.h> // NOLINT(misc-include-cleaner)
 #include <terra/stf/stf.h>
+
+namespace
+{
 
 using namespace Terra::CharUtil;
 
@@ -564,3 +567,5 @@ STF_TEST(TestUTF16toUTF8, BOM2)
 
     STF_ASSERT_EQ(expected_vec, output);
 }
+
+} // namespace
