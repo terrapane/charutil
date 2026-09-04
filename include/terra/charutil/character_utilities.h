@@ -107,21 +107,15 @@ constexpr std::size_t Max_UTF16_String =
  *      UTF-16 output span.
  *
  *  Comments:
- *      Code below used to read like this:
+ *      Code below (and other functions in this file) used to read like this:
  *
  *          auto view_in = std::views::all(std::forward<R1>(in));
  *
- *      But was changed to this:
- *
- *          auto view_in =
- *              std::ranges::subrange(std::begin(std::forward<R1>(in)),
- *                                    std::end(std::forward<R1>(in)));
- *
- *      The reason was that support was required on legacy systems like
- *      CentOS 7. Functionally, these are the same but just more verbose.
- *      In the future (once CentOS 7 and other legacy systems are no longer
- *      supported), this code may be revised to reintroduce std::views.
+ *      However, older Linux systems with libstdc++11 lacked support for this
+ *      and it was changed.  This could be revised again in the future.
+ *      For now, clang-tidy warnings are suppressed.
  */
+// NOLINTBEGIN(cppcoreguidelines-missing-std-forward)
 std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
                                             std::span<const std::uint8_t> in,
                                             std::span<std::uint8_t> out,
@@ -137,20 +131,20 @@ inline std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
                                             R2 &&out,
                                             bool little_endian = true)
 {
-    auto view_in = std::views::all(std::forward<R1>(in));
-    auto view_out = std::views::all(std::forward<R2>(out));
 
     return ConvertUTF8ToUTF16(
         std::span<const std::uint8_t>(
-            reinterpret_cast<const std::uint8_t *>(std::ranges::data(view_in)),
-            std::ranges::size(view_in)),
+            reinterpret_cast<const std::uint8_t *>(std::ranges::data(in)),
+            std::ranges::size(in)),
         std::span<std::uint8_t>(
-            reinterpret_cast<std::uint8_t *>(std::ranges::data(view_out)),
-            std::ranges::size(view_out)),
+            reinterpret_cast<std::uint8_t *>(std::ranges::data(out)),
+            std::ranges::size(out)),
         little_endian);
 }
+// NOLINTEND(cppcoreguidelines-missing-std-forward)
 
 // Same as above, but allowing a string literal (char * or char8_t *)
+// NOLINTBEGIN(cppcoreguidelines-missing-std-forward)
 template<EightBitIntegral T, ContiguousEightBitRange R>
 inline std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
                                             const T *in,
@@ -158,17 +152,17 @@ inline std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
                                             bool little_endian = true)
 {
     const std::basic_string_view<T> view_in(in);
-    auto view_out = std::views::all(std::forward<R>(out));
 
     return ConvertUTF8ToUTF16(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(std::ranges::data(view_in)),
             std::ranges::size(view_in)),
         std::span<std::uint8_t>(
-            reinterpret_cast<std::uint8_t *>(std::ranges::data(view_out)),
-            std::ranges::size(view_out)),
+            reinterpret_cast<std::uint8_t *>(std::ranges::data(out)),
+            std::ranges::size(out)),
         little_endian);
 }
+// NOLINTEND(cppcoreguidelines-missing-std-forward)
 
 /*
  *  ConvertUTF16ToUTF8()
@@ -222,6 +216,7 @@ std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                                             bool little_endian = true);
 
 // Same as above, but allowing any range holding 8-bit values
+// NOLINTBEGIN(cppcoreguidelines-missing-std-forward)
 template<ContiguousEightBitRange R1, ContiguousEightBitRange R2>
     requires(!std::is_same_v<std::remove_cvref_t<R1>,
                              std::span<const std::uint8_t>> ||
@@ -231,20 +226,19 @@ inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                                             R2 &&out,
                                             bool little_endian = true)
 {
-    auto view_in = std::views::all(std::forward<R1>(in));
-    auto view_out = std::views::all(std::forward<R2>(out));
-
     return ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
-            reinterpret_cast<const std::uint8_t *>(std::ranges::data(view_in)),
-            std::ranges::size(view_in)),
+            reinterpret_cast<const std::uint8_t *>(std::ranges::data(in)),
+            std::ranges::size(in)),
         std::span<std::uint8_t>(
-            reinterpret_cast<std::uint8_t *>(std::ranges::data(view_out)),
-            std::ranges::size(view_out)),
+            reinterpret_cast<std::uint8_t *>(std::ranges::data(out)),
+            std::ranges::size(out)),
         little_endian);
 }
+// NOLINTEND(cppcoreguidelines-missing-std-forward)
 
 // Same as above, but accepting a std::u16string as the input
+// NOLINTBEGIN(cppcoreguidelines-missing-std-forward)
 template<ContiguousSixteenBitRange R1, ContiguousEightBitRange R2>
     requires(!std::is_same_v<std::remove_cvref_t<R1>,
                              std::span<const std::uint8_t>> ||
@@ -254,20 +248,19 @@ inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                                             R2 &&out,
                                             bool little_endian = true)
 {
-    auto view_in = std::views::all(std::forward<R1>(in));
-    auto view_out = std::views::all(std::forward<R2>(out));
-
     return ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
-            reinterpret_cast<const std::uint8_t *>(std::ranges::data(view_in)),
-            std::ranges::size(view_in) * 2),
+            reinterpret_cast<const std::uint8_t *>(std::ranges::data(in)),
+            std::ranges::size(in) * 2),
         std::span<std::uint8_t>(
-            reinterpret_cast<std::uint8_t *>(std::ranges::data(view_out)),
-            std::ranges::size(view_out)),
+            reinterpret_cast<std::uint8_t *>(std::ranges::data(out)),
+            std::ranges::size(out)),
         little_endian);
 }
+// NOLINTEND(cppcoreguidelines-missing-std-forward)
 
 // Same as above, but allowing a string literal (u"hello")
+// NOLINTBEGIN(cppcoreguidelines-missing-std-forward)
 template<SixteenBitIntegral T, ContiguousEightBitRange R>
 inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                                             const T *in,
@@ -275,17 +268,17 @@ inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
                                             bool little_endian = true)
 {
     const std::basic_string_view<T> view_in(in);
-    auto view_out = std::views::all(std::forward<R>(out));
 
     return ConvertUTF16ToUTF8(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(std::ranges::data(view_in)),
             std::ranges::size(view_in) * sizeof(T)),
         std::span<std::uint8_t>(
-            reinterpret_cast<std::uint8_t *>(std::ranges::data(view_out)),
-            std::ranges::size(view_out)),
+            reinterpret_cast<std::uint8_t *>(std::ranges::data(out)),
+            std::ranges::size(out)),
         little_endian);
 }
+// NOLINTEND(cppcoreguidelines-missing-std-forward)
 
 /*
  *  IsUTF8Valid()
@@ -313,14 +306,14 @@ inline std::pair<bool, std::size_t> ConvertUTF16ToUTF8(
 bool IsUTF8Valid(std::span<const std::uint8_t> octets);
 
 // Same as above, but allowing any range holding 8-bit values
+// NOLINTBEGIN(cppcoreguidelines-missing-std-forward)
 template<ContiguousEightBitRange R>
 inline bool IsUTF8Valid(R &&octets)
 {
-    auto view = std::views::all(std::forward<R>(octets));
-
     return IsUTF8Valid(std::span<const std::uint8_t>(
-        reinterpret_cast<const std::uint8_t *>(std::ranges::data(view)),
-        std::ranges::size(view)));
+        reinterpret_cast<const std::uint8_t *>(std::ranges::data(octets)),
+        std::ranges::size(octets)));
 }
+// NOLINTEND(cppcoreguidelines-missing-std-forward)
 
 } // namespace Terra::CharUtil
