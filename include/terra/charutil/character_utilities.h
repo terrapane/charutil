@@ -13,7 +13,14 @@
  *      (either little endian or big endian).
  *
  *  Portability Issues:
- *      None.
+  *      Various functions in this module used to read like this:
+ *
+ *          auto view_in = std::views::all(std::forward<R1>(in));
+ *
+ *      However, older Linux systems with libstdc++11 lacked support for this
+ *      and it was changed.  This could be revised again in the future.
+ *      For now, clang-tidy warnings are suppressed as there is strictly no
+ *      need to forward the r-value references.
  */
 
 #pragma once
@@ -107,13 +114,7 @@ constexpr std::size_t Max_UTF16_String =
  *      UTF-16 output span.
  *
  *  Comments:
- *      Code below (and other functions in this file) used to read like this:
- *
- *          auto view_in = std::views::all(std::forward<R1>(in));
- *
- *      However, older Linux systems with libstdc++11 lacked support for this
- *      and it was changed.  This could be revised again in the future.
- *      For now, clang-tidy warnings are suppressed.
+ *      None.
  */
 // NOLINTBEGIN(cppcoreguidelines-missing-std-forward)
 std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
@@ -131,7 +132,6 @@ inline std::pair<bool, std::size_t> ConvertUTF8ToUTF16(
                                             R2 &&out,
                                             bool little_endian = true)
 {
-
     return ConvertUTF8ToUTF16(
         std::span<const std::uint8_t>(
             reinterpret_cast<const std::uint8_t *>(std::ranges::data(in)),
